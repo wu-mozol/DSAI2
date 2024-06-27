@@ -1,0 +1,185 @@
+---
+title: "Mastodon scraper"
+author: "Gábor T. Mozol"
+date: "June, 2024"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Mastodon scraper
+
+This notebook is where data scraping of Mastodon has been implemented. The project uses five external files to function well over time:
+* **functions_scrape.R** contains all the outsourced function definitions. The relevant functions for this notebook are: get_followees(user_id), get_account_info(user_id), perform_bfs(start_user_id, state = NULL)
+* The following .RDS files are the save states of the search so far, they are stored at ~/data/mastodon_data.
+  * **edges.rds** contains all the follower-followee edges found in the BFS search
+  * **nodes.rds** contains all the nodes visited and searched so far
+  * **queue.rds** contains the queue of upcoming user ids that need to be searched still
+  * **visited.rds** is the list of ids found so far. This is used in parallel with nodes.rds, as this representation is faster.
+
+## Libraries
+The notebook uses the following libraries.
+```{r warning=FALSE}
+library(rtoot)
+library(dplyr)
+library(lubridate)
+library(tibble)
+library(data.table)
+library(usethis)
+library(renv)
+```
+
+## Project and token setup
+First, the wd needs to be set up as well as the token for scraping, that is stored in .REnviron.
+
+Make sure to set you wd to the project folder.
+```{r}
+my_wd <- getwd()
+project <- file.path(my_wd)
+usethis::create_project(project, open = FALSE)
+usethis::proj_set(project)
+source(file.path(my_wd,"functions/functions_scrape.R"))
+```
+
+This is my (Gábor Mozol) token, please don't use it. This is not an optimal way to store it, but made my life easier.
+```{r}
+b <- list(bearer = "5GpTKBv-6ew9-3W0IH_f-uZwVFuf2NTfxIrD-gMUCqk", type="user", instance="mastodon.social")
+class(b) <- "rtoot_bearer"
+```
+
+**For a new envvar token copy in the clipboard contents into the .REnviron file in the WD**
+```{r}
+convert_token_to_envvar(b)
+```
+**Make sure that the correct token is being used!**
+```{r}
+readRenviron(file.path(my_wd,".Renviron"))
+verify_envvar()
+```
+## Scraper
+The scraper works as such:
+* You choose a starting user name
+* Run an inital search with this start
+* You automatically run new iterations
+
+The search itself does the following.
+* Lookup next item in queue (start_user_id in first run!)
+* Fetch it's data using API
+* Fetch it's followees using an API (currently not complete, but 40)
+* Validate the followees and add them to the queue's end, as well as to the edge list.
+* Mark item as visited
+* Repeat
+
+### Initialize
+```{r}
+# Initialize the start user
+start_user <- "@Gargron@mastodon.social"
+
+# Get the user ID of the start user
+start_user_id <- search_accounts(start_user) %>%
+  arrange(desc(followers_count)) %>%
+  slice(1) %>%
+  pull(id)
+```
+
+### First run
+**Don't run if there are already files in your WD**
+```{r}
+#next_state <- perform_bfs(start_user_id = start_user_id)
+#
+#saveRDS(next_state$queue, file = file.path(my_wd,"data/mastodon_data/queue.rds"))
+#saveRDS(next_state$nodes, file = file.path(my_wd,"data/mastodon_data/nodes.rds"))
+#saveRDS(next_state$edges, file = file.path(my_wd,"data/mastodon_data/edges.rds"))
+#saveRDS(next_state$visited, file = file.path(my_wd,"data/mastodon_data/visited.rds"))
+```
+
+### Next run
+
+Note: There's a lot of print output due to the function, but it helps keep track of what's being fetched.
+```{r}
+queue <- readRDS(file.path(my_wd,"data/mastodon_data/queue.rds"))
+nodes <- readRDS(file.path(my_wd,"data/mastodon_data/nodes.rds"))
+edges <- readRDS(file.path(my_wd,"data/mastodon_data/edges.rds"))
+visited <- readRDS(file.path(my_wd,"data/mastodon_data/visited.rds"))
+
+next_state <- list(
+  queue = queue,
+  nodes = nodes,
+  edges = edges,
+  visited = visited
+)
+
+next_state <- perform_bfs(state = next_state)
+
+saveRDS(next_state$queue, file = file.path(my_wd,"data/mastodon_data/queue.rds"))
+saveRDS(next_state$nodes, file = file.path(my_wd,"data/mastodon_data/nodes.rds"))
+saveRDS(next_state$edges, file = file.path(my_wd,"data/mastodon_data/edges.rds"))
+saveRDS(next_state$visited, file = file.path(my_wd,"data/mastodon_data/visited.rds"))
+```
+
+### Automatic runs
+Set runs to determine run time. Each run fetches 10 new nodes with 40 followees. This translates to 10 new scrapes and up to 390 new edges and end nodes found. As there are 300 API calls / 5 minutes, you can technically run into a sleep mode within a run. After every run there's a 5 minute cooldown to reduce states where the new data is not stored in the .RDS documents. On average a single run takes 5 minutes.
+```{r}
+### Iterative version of scraping
+runs <- 6
+
+
+
+for (i in 1:runs) {
+  # Load the current state from RDS files
+  queue <- readRDS(file.path(my_wd, "data/mastodon_data/queue.rds"))
+  nodes <- readRDS(file.path(my_wd, "data/mastodon_data/nodes.rds"))
+  edges <- readRDS(file.path(my_wd, "data/mastodon_data/edges.rds"))
+  visited <- readRDS(file.path(my_wd, "data/mastodon_data/visited.rds"))
+  
+  # Combine into the next_state list
+  next_state <- list(
+    queue = queue,
+    nodes = nodes,
+    edges = edges,
+    visited = visited
+  )
+  
+  # Perform BFS or any other function that updates the state
+  next_state <- perform_bfs(state = next_state)
+  
+  # Save the updated state back to RDS files
+  saveRDS(next_state$queue, file = file.path(my_wd, "data/mastodon_data/queue.rds"))
+  saveRDS(next_state$nodes, file = file.path(my_wd, "data/mastodon_data/nodes.rds"))
+  saveRDS(next_state$edges, file = file.path(my_wd, "data/mastodon_data/edges.rds"))
+  saveRDS(next_state$visited, file = file.path(my_wd, "data/mastodon_data/visited.rds"))
+  
+  # Print iteration number for tracking progress
+  cat("Iteration", i, "completed.\n")
+  
+  # Sleep for 5 minutes (300 seconds) if it's not the last iteration
+  if (i < runs) {
+    print("Sleeping for 5 minutes to recharge requests")
+    Sys.sleep(300)  # 5 minutes in seconds
+  }
+}
+```
+
+### Check status
+
+You can check the current scraping status here. 
+* Efficiency status (2024.06.21): 1.7% of edges are duplicates (42877 found), 2.4% of nodes are duplicates (1500 visited), 22850 nodes reached in total.
+* Efficiency status (2024.06.22): 1.8% of edges are duplicates (81764 found), 2.9% of nodes are duplicates (2802 visited), 38955 nodes reached in total.
+* Efficiency status (2024.06.24): 2.1% of edges are duplicates (140030 found), 4.2% of nodes are duplicates (5070 visited), 54285 nodes reached in total.
+```{r}
+queue <- readRDS(file.path(my_wd, "data/mastodon_data/queue.rds"))
+nodes <- readRDS(file.path(my_wd, "data/mastodon_data/nodes.rds"))
+edges <- readRDS(file.path(my_wd, "data/mastodon_data/edges.rds"))
+visited <- readRDS(file.path(my_wd, "data/mastodon_data/visited.rds"))
+
+distinct_values <- union(edges$follower, edges$followee)
+pairs <- apply(edges, 1, function(x) paste(sort(x), collapse = "-"))
+distinct_pairs <- length(unique(pairs))
+
+cat("Edges found: ",length(edges$follower), "\n")
+cat("Duplicate edges found: ", length(edges$follower)-distinct_pairs,"\n")
+cat("Nodes scraped: ", length(nodes$id), "\n")
+cat("Duplicate nodes scraped: ",(length(nodes$id)-length(unique(nodes$id))), "\n")
+cat("Distinct users visited: ",(length(distinct_values)), "\n")
+```

@@ -1,0 +1,339 @@
+---
+title: "Mastodon network analysis"
+author: "Gábor T. Mozol"
+date: "June, 2024"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Mastodon.Social analysis
+
+This notebook is responsible for the comparative analysis of the mastodon.social data set acquired through scraping the network with the library rtoot and a public user application's API key. Unlike the Truth Social data set, the mastodon.social data set is read in and analysed in situ.
+
+The mastodon.social graph is compared with model graphs:
+* Erdős-Rényi or Gnp graph.
+* Watts-Strogatz, a graph model with small-world properties.
+* Barabási-Albert, a preferential attachment graph model.
+
+The graph models are a 1:1 scale version of the estimated total size of the mastodon.social network size in the Autumn of 2022 (note that the data gathered is up to date as of June 2024). These models are then scraped using a similar BFS method as by Gerard et al. (2023). Based on our assumptions these samples are idealized reproductions of the Truth Social sample.
+
+## Libraries
+The notebook uses the following libraries.
+```{r warning=FALSE}
+library(ggraph)
+library(igraph)
+library(dplyr)
+```
+
+## Project setup
+First, the wd needs to be set up.
+
+Make sure to set you wd to the project folder.
+```{r}
+my_wd <- getwd()
+project <- file.path(my_wd)
+#usethis::create_project(project, open = FALSE)
+usethis::proj_set(project)
+source(file.path(my_wd,"functions/functions_analysis.R"))
+```
+
+## The Mastodon sample
+The mastodon.social sample is stored in to .RDS files as the result of the scraping. **nodes.RDS** contains the nodes, while **edges.RDS** contains the edges of the graph.
+There are a few duplicates (below 5%) in the tables that need to be cleaned up first.
+
+Then the data will be read into a graph and analysis function will return its descriptive statistics.
+
+### Read and clean the data
+```{r}
+nodes <- readRDS(file.path(my_wd, "data/mastodon_data/nodes.rds"))
+edges <- readRDS(file.path(my_wd, "data/mastodon_data/edges.rds"))
+```
+
+```{r}
+unique_edges <- edges %>%
+  distinct(follower, followee)
+unique_nodes <- nodes %>%
+  distinct(id, .keep_all = TRUE)
+```
+
+```{r}
+ids_to_add <- union(setdiff(edges$follower, nodes$id), setdiff(edges$followee, nodes$id))
+
+additional_nodes <- data.frame(
+  id = ids_to_add,
+  name = NA_character_,
+  followers_count = NA_integer_
+)
+
+unique_nodes <- bind_rows(unique_nodes, additional_nodes)
+```
+
+### Create graph representation
+```{r}
+g_ma <- graph_from_data_frame(d = unique_edges, vertices = unique_nodes, directed = TRUE)
+```
+
+If you want to use the previously generated graph, you can load it in this way.
+```{r}
+g_ma <- read_graph(file.path(my_wd,"/graph/ma.csv"), "edgelist", directed=TRUE)
+```
+
+### Analyze
+```{r}
+g_ma_analysis <- graph_main_analysis(g_ma)
+```
+
+```{r}
+cat("Order: ", g_ma_analysis$order, "\n")
+cat("Size: ", g_ma_analysis$size, "\n")
+cat("Degree range: ", g_ma_analysis$degree_min, " - ", g_ma_analysis$degree_max, "\n")
+cat("Indegree range: ", g_ma_analysis$indegree_min, " - ", g_ma_analysis$indegree_max, "\n")
+cat("Outdegree range: ", g_ma_analysis$outdegree_min, " - ", g_ma_analysis$outdegree_max, "\n")
+cat("Clusters (weak / strong): ", g_ma_analysis$clusters$weak, " / ", g_ma_analysis$clusters$strong, "\n")
+cat("Edge connectivity: ", g_ma_analysis$e_con, "\n")
+cat("Vertex connectivity: ", g_ma_analysis$v_con, "\n")
+cat("Diameter: ", g_ma_analysis$diameter, "\n")
+cat("Average path length: ", g_ma_analysis$apl, "\n")
+cat("Transitivity: ", g_ma_analysis$transitivity, "\n")
+```
+
+### Save
+```{r}
+write_graph(g_ma,file.path(my_wd,"/graph/ma.csv"),"edgelist")
+```
+
+### Write out Mastodon information for later analysis
+```{r}
+ma_sample_order <- g_ma_analysis$order
+ma_sample_size <- g_ma_analysis$size
+ma_sample_p <- 2*ma_sample_size/(ma_sample_order*(ma_sample_order-1))
+scale_sample_pop <- g_ma_analysis$order/950000
+ma_pop_order <- round(ma_sample_order/scale_sample_pop,0)
+ma_pop_size <- round(ma_sample_size/scale_sample_pop,0)
+```
+
+## Model graphs
+
+```{r}
+scale <- 1/2
+```
+
+### Erdős-Rényi or Gnp model graph analysis
+
+#### Generate
+The parameters required are n and p. The value of n is the order of the network, while p is the probability of a connection between any pair of nodes. This probability was calculated under the assumption that an average TS user might be connected to a 100 other users as follower or followee on average. We have the p value of the Truth Social network, ideally the generated network has a similar p value (i.e. within an order of magnitude).
+```{r}
+n <- round(ma_pop_order * scale,0)
+p <- 0.0000526 #(average 50 follower relationships in a 950.000 network)
+set.seed(n)
+g_pop_er <- sample_gnp(n, p, directed = TRUE)
+
+g_sample_er <- bfs_subgraph(g_pop_er, scale = scale_sample_pop)
+er_sample_order <- vcount(g_sample_er)
+er_sample_size <- ecount(g_sample_er)
+er_sample_p <- 2*er_sample_size/(er_sample_order*(er_sample_order-1))
+cat("Sample/pop scale: ", vcount(g_sample_er)/vcount(g_pop_er),"\n")
+cat("P value: ", er_sample_p,"\n")
+cat("Target p value: ", ma_sample_p,"\n")
+```
+If you want to use the previously generated graph, you can load it in this way.
+```{r}
+g_sample_er <- read_graph(file.path(my_wd,"/model_graphs/gnp_ma.csv"), "edgelist", directed=TRUE)
+```
+
+#### Analyze
+The analysis function finds the information on the model network.
+```{r}
+er_sample_analysis <- graph_main_analysis(g_sample_er)
+```
+```{r}
+cat("Order: ", er_sample_analysis$order, "\n")
+cat("Size: ", er_sample_analysis$size, "\n")
+cat("Degree range: ", er_sample_analysis$degree_min, " - ", er_sample_analysis$degree_max, "\n")
+cat("Indegree range: ", er_sample_analysis$indegree_min, " - ", er_sample_analysis$indegree_max, "\n")
+cat("Outdegree range: ", er_sample_analysis$outdegree_min, " - ", er_sample_analysis$outdegree_max, "\n")
+cat("Clusters (weak / strong): ", er_sample_analysis$clusters$weak, " / ", er_sample_analysis$clusters$strong, "\n")
+cat("Edge connectivity: ", er_sample_analysis$e_con, "\n")
+cat("Vertex connectivity: ", er_sample_analysis$v_con, "\n")
+cat("Diameter: ", er_sample_analysis$diameter, "\n")
+cat("Average path length: ", er_sample_analysis$apl, "\n")
+cat("Transitivity: ", er_sample_analysis$transitivity, "\n")
+```
+
+#### Save
+```{r}
+write_graph(g_sample_er,file.path(my_wd,"/model_graphs/gnp_ma.csv"),"edgelist")
+```
+
+### Watts-Strogatz or Small World Graph analysis
+Disclaimer: The Watts-Strogatz network is NOT directed. So in and outdegree values cannot be compared by default.
+
+#### Generate
+The parameters required are n, k, and p. The value of n is again the order of the graph. The value of k is one-sided neighbors, which can be estimated. The value of p is a rewiring probability, which is once again an estimation.
+```{r}
+n <- round(ma_pop_order * scale,0)
+k <- round(ma_pop_size/ma_pop_order,0)
+p <- 0.1443
+set.seed(n)
+g_pop_ws <- sample_smallworld(dim=1, size=n, nei=k, p=p)
+
+g_sample_ws <- bfs_subgraph(g_pop_ws, scale = scale_sample_pop)
+cat("Sample/pop scale: ", vcount(g_sample_ws)/vcount(g_pop_ws),"\n")
+```
+If you want to use the previously generated graph, you can load it in this way.
+```{r}
+g_sample_ws <- read_graph(file.path(my_wd,"/model_graphs/swg_ma.csv"), "edgelist", directed=FALSE)
+```
+
+#### Analyze
+The analysis function finds the information on the model network.
+```{r}
+ws_sample_analysis <- graph_main_analysis(g_sample_ws)
+```
+```{r}
+cat("Order: ", ws_sample_analysis$order, "\n")
+cat("Size: ", ws_sample_analysis$size, "\n")
+cat("Degree range: ", ws_sample_analysis$degree_min, " - ", ws_sample_analysis$degree_max, "\n")
+cat("Indegree range: ", ws_sample_analysis$indegree_min, " - ", ws_sample_analysis$indegree_max, "\n")
+cat("Outdegree range: ", ws_sample_analysis$outdegree_min, " - ", ws_sample_analysis$outdegree_max, "\n")
+cat("Clusters (weak / strong): ", ws_sample_analysis$clusters$weak, " / ", ws_sample_analysis$clusters$strong, "\n")
+cat("Edge connectivity: ", ws_sample_analysis$e_con, "\n")
+cat("Vertex connectivity: ", ws_sample_analysis$v_con, "\n")
+cat("Diameter: ", ws_sample_analysis$diameter, "\n")
+cat("Average path length: ", ws_sample_analysis$apl, "\n")
+cat("Transitivity: ", ws_sample_analysis$transitivity, "\n")
+```
+
+#### Save
+```{r}
+write_graph(g_sample_ws,file.path(my_wd,"/model_graphs/swg_ma.csv"),"edgelist")
+```
+
+### Barabási-Albert or preferential attachment graph analysis
+
+#### Generate
+The parameters required are n and m. The value of n is again the order of the graph. M is the degree of freedom, which can be estimated.
+```{r}
+n <- round(ma_pop_order * scale,0)
+m <- round(ma_pop_size/ma_pop_order,0)
+set.seed(n)
+g_pop_pa <- sample_pa(n=n, m=m, directed=TRUE)
+
+g_sample_pa <- bfs_subgraph(g_pop_pa, scale = scale_sample_pop)
+cat("Sample/pop scale: ", vcount(g_sample_pa)/vcount(g_pop_pa),"\n")
+```
+If you want to use the previously generated graph, you can load it in this way.
+```{r}
+g_sample_pa <- read_graph(file.path(my_wd,"/model_graphs/pa_ma.csv"), "edgelist", directed=TRUE)
+```
+
+#### Analyze
+The analysis function finds the information on the model network.
+```{r}
+pa_sample_analysis <- graph_main_analysis(g_sample_pa)
+```
+```{r}
+cat("Order: ", pa_sample_analysis$order, "\n")
+cat("Size: ", pa_sample_analysis$size, "\n")
+cat("Degree range: ", pa_sample_analysis$degree_min, " - ", pa_sample_analysis$degree_max, "\n")
+cat("Indegree range: ", pa_sample_analysis$indegree_min, " - ", pa_sample_analysis$indegree_max, "\n")
+cat("Outdegree range: ", pa_sample_analysis$outdegree_min, " - ", pa_sample_analysis$outdegree_max, "\n")
+cat("Clusters (weak / strong): ", pa_sample_analysis$clusters$weak, " / ", pa_sample_analysis$clusters$strong, "\n")
+cat("Edge connectivity: ", pa_sample_analysis$e_con, "\n")
+cat("Vertex connectivity: ", pa_sample_analysis$v_con, "\n")
+cat("Diameter: ", pa_sample_analysis$diameter, "\n")
+cat("Average path length: ", pa_sample_analysis$apl, "\n")
+cat("Transitivity: ", pa_sample_analysis$transitivity, "\n")
+```
+
+#### Save
+```{r}
+write_graph(g_sample_pa,file.path(my_wd,"/model_graphs/pa_ts.csv"),"edgelist")
+```
+
+## Visualisations
+Note: both layout and rendering calculations may take a long time
+
+### Layout
+The layouts are in separate cells, as execution takes quite long.
+```{r}
+set.seed(length(V(g_sample_er))+length(V(g_sample_ws))+length(V(g_sample_pa)))
+```
+
+```{r}
+#l_ma = layout_with_graphopt(g_ma, niter=100, charge = 0.05, mass = 30)
+#saveRDS(l_ma, file = file.path(my_wd,"layouts/l_ma.RDS"))
+l_ma2 = layout_with_drl(g_ma)
+saveRDS(l_ma2, file = file.path(my_wd,"layouts/l_ma2.RDS"))
+```
+```{r}
+#l_er = layout_with_graphopt(g_sample_er, niter=100, charge = 0.05, mass = 30)
+#saveRDS(l_er, file = file.path(my_wd,"layouts/l_er_ma.RDS"))
+l_er2 = layout_with_drl(g_sample_er)
+saveRDS(l_er2, file = file.path(my_wd,"layouts/l_er_ma2.RDS"))
+```
+```{r}
+#l_ws = layout_with_graphopt(g_sample_ws, niter=100, charge = 0.05, mass = 30)
+#saveRDS(l_ws, file = file.path(my_wd,"layouts/l_ws_ma.RDS"))
+l_ws2 = layout_with_drl(g_sample_ws)
+saveRDS(l_ws2, file = file.path(my_wd,"layouts/l_ws_ma2.RDS"))
+```
+```{r}
+#l_pa = layout_with_graphopt(g_sample_pa, niter=100, charge = 0.05, mass = 30)
+#saveRDS(l_pa, file = file.path(my_wd,"layouts/l_pa_ma.RDS"))
+l_pa2 = layout_with_drl(g_sample_pa)
+saveRDS(l_pa2, file = file.path(my_wd,"layouts/l_pa_ma2.RDS"))
+```
+
+You can alternatively load them in for /layouts.
+```{r}
+#l_ma <- readRDS(file.path(my_wd,"layouts/l_ma.RDS"))
+#l_er <- readRDS(file.path(my_wd,"layouts/l_er_ma.RDS"))
+#l_ws <- readRDS(file.path(my_wd,"layouts/l_ws_ma.RDS"))
+#l_pa <- readRDS(file.path(my_wd,"layouts/l_pa_ma.RDS"))
+l_ma2 <- readRDS(file.path(my_wd,"layouts/l_ma2.RDS"))
+l_er2 <- readRDS(file.path(my_wd,"layouts/l_er_ma2.RDS"))
+l_ws2 <- readRDS(file.path(my_wd,"layouts/l_ws_ma2.RDS"))
+l_pa2 <- readRDS(file.path(my_wd,"layouts/l_pa_ma2.RDS"))
+```
+
+### Feature addition
+
+Add the degrees
+```{r}
+g_ma <- add_degree_attribute(g_ma)
+g_sample_er <- add_degree_attribute(g_sample_er)
+g_sample_ws <- add_degree_attribute(g_sample_ws)
+g_sample_pa <- add_degree_attribute(g_sample_pa)
+```
+
+### Create graphs
+This uses an external function for uniform representation.
+```{r}
+g_graph_ma <- create_graph_visualization(g_ma, l_ma2, "purple")
+g_graph_er <- create_graph_visualization(g_sample_er, l_er2, "blue")
+g_graph_ws <- create_graph_visualization(g_sample_ws, l_ws2, "green")
+g_graph_pa <- create_graph_visualization(g_sample_pa, l_pa2, "red")
+```
+
+```{r}
+g_graph_ma
+ggsave(file.path(my_wd,"plots/ma.svg"), plot=g_graph_ma, device="svg", width=19, height=9)
+```
+
+```{r}
+g_graph_er
+ggsave(file.path(my_wd,"plots/er_ma.svg"), plot=g_graph_er, device="svg", width=19, height=9)
+```
+
+```{r}
+g_graph_ws
+ggsave(file.path(my_wd,"plots/ws_ma.svg"), plot=g_graph_ws, device="svg", width=19, height=9)
+```
+
+```{r}
+g_graph_pa
+ggsave(file.path(my_wd,"plots/pa_ma.svg"), plot=g_graph_pa, device="svg", width=19, height=9)
+```
