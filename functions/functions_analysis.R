@@ -143,12 +143,190 @@ graph_main_analysis <- function(g){
     'diameter' = g_diam,
     'apl' = g_apl,
     'transitivity' = g_trans,
+    'deg_c' = g_deg_c,
     'top_deg_c_label' = g_deg_c_label,
+    'eigen_c' = g_eigen_c,
     'top_eigen_c_label' = g_eigen_c_label
     #'top_close_c_label' = g_close_c_label,
     #'top_between_c_label' = g_between_c_label,
     #'top_katz_c_label' = g_katz_c_label,
     #'top_page_c_label' = g_page_c_label
+  )
+}
+graph_main_analysis2 <- function(g){
+
+  print('Finding: order, size and density')
+  g_order <- vcount(g)
+  g_size <- ecount(g)
+  if (is_directed(g)) {
+    g_density <- (2 * g_size) / (g_order * (g_order - 1))
+  } else {
+    g_density <- (g_size) / (g_order * (g_order - 1))
+  }
+
+  print('Finding: degree measures')
+
+  g_deg_tot <- degree(g, mode = 'all')
+  g_deg_max <- max(g_deg_tot)
+  g_deg_min <- min(g_deg_tot)
+  all_ <- list('total'=g_deg_tot, 'min' = g_deg_min, 'max' = g_deg_max)
+
+  if (is_directed(g)) {
+    g_in_deg_tot <- degree(g, mode = 'in')
+    g_in_deg_max <- max(g_in_deg_tot)
+    g_in_deg_min <- min(g_in_deg_tot)
+    in_ <- list('total'=g_in_deg_tot, 'min' = g_in_deg_min, 'max' = g_in_deg_max)
+
+    g_out_deg_tot <- degree(g, mode = 'out')
+    g_out_deg_max <- max(g_out_deg_tot)
+    g_out_deg_min <- min(g_out_deg_tot)
+    out_ <- list('total'=g_out_deg_tot, 'min' = g_out_deg_min, 'max' = g_out_deg_max)
+
+    g_degrees <- list('all' = all_, 'in' = in_, 'out' = out_)
+  } else {
+    g_degrees <- list('all' = all_)
+  }
+
+  print('Finding: components')
+  weak_comp <- components(g, mode = 'weak')
+  g_no_comp_weak <- weak_comp$no
+
+  strong_comp <- components(g, mode = 'strong')
+  g_no_comp_strong <- strong_comp$no
+
+  g_con <- if (g_no_comp_strong==1) {
+    'strong'
+  } else if (g_no_comp_weak==1) {
+    'weak'
+  } else {
+    'not'
+  }
+
+  g_components <- list('weak' = g_no_comp_weak, 'strong' = g_no_comp_strong)
+
+  print('Finding: centrality measures')
+#  # Closeness
+#  if (g_con == 'strong') {
+#    g_close_c_all_r <- closeness(g, mode = 'all')
+#    g_close_c_all_n <- closeness(g, mode = 'all', normalized = TRUE)
+#    g_close_c_all <- list('regular' = g_close_c_all_r, 'normalized' = g_close_c_all_n)
+#
+#    if (is_directed(g)) {
+#      g_close_c_in_r <- closeness(g, mode = 'in')
+#      g_close_c_in_n <- closeness(g, mode = 'in', normalized = TRUE)
+#      g_close_c_in <- list('regular' = g_close_c_in_r, 'normalized' = g_close_c_in_n)
+#
+#      g_close_c_out_r <- closeness(g, mode = 'out')
+#      g_close_c_out_n <- closeness(g, mode = 'out', normalized = TRUE)
+#      g_close_c_out <- list('regular' = g_close_c_out_r, 'normalized' = g_close_c_out_n)
+#
+#      g_close_c <- list('all' = g_close_c_all, 'in' = g_close_c_in, 'out' = g_close_c_out)
+#    } else {
+#      g_close_c <- list('all' = g_close_c_all)
+#    }
+#  } else {
+#    g_close_c_all_r <- harmonic_centrality(g, mode = 'all')
+#    g_close_c_all_n <- harmonic_centrality(g, mode = 'all', normalized = TRUE)
+#    g_close_c_all <- list('regular' = g_close_c_all_r, 'normalized' = g_close_c_all_n)
+#
+#    if (is_directed(g)) {
+#      g_close_c_in_r <- harmonic_centrality(g, mode = 'in')
+#      g_close_c_in_n <- harmonic_centrality(g, mode = 'in', normalized = TRUE)
+#      g_close_c_in <- list('regular' = g_close_c_in_r, 'normalized' = g_close_c_in_n)
+#
+#      g_close_c_out_r <- harmonic_centrality(g, mode = 'out')
+#      g_close_c_out_n <- harmonic_centrality(g, mode = 'out', normalized = TRUE)
+#      g_close_c_out <- list('regular' = g_close_c_out_r, 'normalized' = g_close_c_out_n)
+#
+#      g_close_c <- list('all' = g_close_c_all, 'in' = g_close_c_in, 'out' = g_close_c_out)
+#    } else {
+#      g_close_c <- list('all' = g_close_c_all)
+#    }
+#  }
+
+#  # Betweenness
+#  g_between_c_normal <- betweenness(g, directed = TRUE)
+#  g_between_c_underlying <- betweenness(g, directed = FALSE)
+#  g_between_c <- list('normal' = g_between_c_normal, 'underlying' = g_between_c_underlying)
+
+  # Eigenvector
+  if (!is_directed(g)) {
+    g_eigen_c_all_r <- eigen_centrality(g, scale = FALSE, weights = NA)
+    g_eigen_c_all_n <- eigen_centrality(g, scale = TRUE, weights = NA)
+    g_eigen_c_all <- list('eucledian' = g_eigen_c_all_r, 'normal' = g_eigen_c_all_n)
+    g_eigen_c <- list('all' = g_eigen_c_all)
+  } else {
+    g_eigen_c_all_r <- eigen_centrality(g, directed = FALSE, scale = FALSE, weights = NA)
+    g_eigen_c_all_n <- eigen_centrality(g, directed = FALSE, scale = TRUE, weights = NA)
+    g_eigen_c_all <- list('eucledian' = g_eigen_c_all_r, 'normal' = g_eigen_c_all_n)
+
+    g_eigen_c_out_r <- eigen_centrality(g, directed = TRUE, scale = FALSE, weights = NA)
+    g_eigen_c_out_n <- eigen_centrality(g, directed = TRUE, scale = TRUE, weights = NA)
+    g_eigen_c_out <- list('eucledian' = g_eigen_c_out_r, 'normal' = g_eigen_c_out_n)
+
+    g_eigen_c_in_r <- eigen_centrality(reverse_edges(g), directed = TRUE, scale = FALSE, weights = NA)
+    g_eigen_c_in_n <- eigen_centrality(reverse_edges(g), directed = TRUE, scale = TRUE, weights = NA)
+    g_eigen_c_in <- list('eucledian' = g_eigen_c_in_r, 'normal' = g_eigen_c_in_n)
+
+    g_eigen_c <- list('all' = g_eigen_c_all, 'out' = g_eigen_c_out, 'in' = g_eigen_c_in)
+  }
+
+  print('Finding: distance measures')
+  #g_all_apsp <- distances(g, 'all', weights = NA)
+  #if (is_directed(g)) {
+  #
+  #  g_in_apsp <- distances(g, 'in', weights = NA)
+  #  g_out_apsp <- distances(g, 'out', weights = NA)
+  #
+  #  g_apsp <- list('all' = g_all_apsp, 'in' = g_in_apsp, 'out' = g_out_apsp)
+  #} else {
+  #  print('1')
+  #  g_apsp <- list('all' = g_all_apsp)
+  #}
+  if (g_con == 'strong') {
+    g_diam <- diameter(g, directed = TRUE, unconnected = FALSE, weights = NA)
+    g_diam_underlying <- diameter(g, directed = FALSE, unconnected = FALSE, weights = NA)
+
+    g_apl <- mean_distance(g, directed = TRUE, unconnected = FALSE, weights = NA)
+    g_apl_underlying <- mean_distance(g, directed = FALSE, unconnected = FALSE, weights = NA)
+  } else {
+    g_diam <- diameter(g, directed = TRUE, unconnected = TRUE, weights = NA)
+    g_diam_underlying <- diameter(g, directed = FALSE, unconnected = TRUE, weights = NA)
+
+    g_apl <- mean_distance(g, directed = TRUE, unconnected = TRUE, weights = NA)
+    g_apl_underlying <- mean_distance(g, directed = FALSE, unconnected = TRUE, weights = NA)
+  }
+  g_diameter <- list('normal' = g_diam, 'underlying' = g_diam_underlying)
+  g_apls <- list('normal' = g_apl, 'underlying' = g_apl_underlying)
+  g_distance <- list('apsp' = 0, 'diameter' = g_diameter, 'APL' = g_apls)
+
+
+  print('Finding: connectivity measures')
+  g_vconn <- vertex_connectivity(g)
+  g_vconn_underlying <- vertex_connectivity(as.undirected(g, 'mutual'))
+  g_v_conn <- list('normal' = g_vconn, 'underlying' = g_vconn_underlying)
+  g_econn <- edge_connectivity(g)
+  g_econn_underlying <- edge_connectivity(as.undirected(g, 'mutual'))
+  g_e_conn <- list('normal' = g_econn, 'underlying' = g_econn_underlying)
+  g_connectivity <- list('vertex' = g_v_conn, 'edge' = g_e_conn)
+
+  #C Transitivity
+  print('Finding transitivity')
+  g_trans <- transitivity(g)
+
+  #C Return
+  res <- list(
+    'order' = g_order,
+    'size' = g_size,
+    'density' = g_density,
+    'degrees' = g_degrees,
+    'clusters' = g_components,
+    #'closeness' = g_close_c,
+    #'betweenness' = g_between_c,
+    'eigenvector' = g_eigen_c,
+    'distance' = g_distance,
+    'connectivity' = g_connectivity,
+    'transitivity' = g_trans
   )
 }
 bfs_subgraph <- function(graph, scale) {
@@ -274,4 +452,34 @@ read_tsv_files <- function(folder_path) {
   combined_df <- do.call(rbind, list_of_dfs)
 
   return(combined_df)
+}
+top_x_components_graph <- function(graph, x) {
+  # Find all components
+  components <- components(graph)
+
+  # Get the sizes of each component
+  component_sizes <- components$csize
+
+  # Find the indices of the top x components by size
+  top_x_indices <- order(component_sizes, decreasing = TRUE)[1:x]
+
+  # Find the nodes that belong to the top x components
+  top_x_members <- which(components$membership %in% top_x_indices)
+
+  # Create the subgraph induced by the nodes in the top x components
+  top_x_graph <- induced_subgraph(graph, top_x_members)
+
+  return(top_x_graph)
+}
+top_x_degrees_graph <- function(graph, x) {
+  # Calculate the degree of each vertex
+  degrees <- degree(graph)
+
+  # Find the indices of the vertices with the top x degrees
+  top_x_indices <- order(degrees, decreasing = TRUE)[1:x]
+
+  # Create the subgraph induced by the vertices with the top x degrees
+  top_x_graph <- induced_subgraph(graph, top_x_indices)
+
+  return(top_x_graph)
 }
