@@ -1756,93 +1756,13 @@ display: none;
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5gYGAifQ== -->
-<pre class="r"><code>library(tidyverse)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGRwbHlyKVxubGlicmFyeShpZ3JhcGgpXG5saWJyYXJ5KGdncmFwaClcbmxpYnJhcnkoc3ZnbGl0ZSlcbmBgYCJ9 -->
+<pre class="r"><code>library(tidyverse)
+library(dplyr)
+library(igraph)
+library(ggraph)
+library(svglite)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogcGFja2FnZSDigJh0aWR5dmVyc2XigJkgd2FzIGJ1aWx0IHVuZGVyIFIgdmVyc2lvbiA0LjIuM1xuV2FybmluZzogcGFja2FnZSDigJhnZ3Bsb3Qy4oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gNC4yLjNcbldhcm5pbmc6IHBhY2thZ2Ug4oCYdGlkeXLigJkgd2FzIGJ1aWx0IHVuZGVyIFIgdmVyc2lvbiA0LjIuM1xuV2FybmluZzogcGFja2FnZSDigJhyZWFkcuKAmSB3YXMgYnVpbHQgdW5kZXIgUiB2ZXJzaW9uIDQuMi4zXG5XYXJuaW5nOiBwYWNrYWdlIOKAmHB1cnJy4oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gNC4yLjNcbldhcm5pbmc6IHBhY2thZ2Ug4oCYc3RyaW5ncuKAmSB3YXMgYnVpbHQgdW5kZXIgUiB2ZXJzaW9uIDQuMi4zXG5XYXJuaW5nOiBwYWNrYWdlIOKAmGZvcmNhdHPigJkgd2FzIGJ1aWx0IHVuZGVyIFIgdmVyc2lvbiA0LjIuM1xuIn0= -->
-<pre><code>Warning: package ‘tidyverse’ was built under R version 4.2.3
-Warning: package ‘ggplot2’ was built under R version 4.2.3
-Warning: package ‘tidyr’ was built under R version 4.2.3
-Warning: package ‘readr’ was built under R version 4.2.3
-Warning: package ‘purrr’ was built under R version 4.2.3
-Warning: package ‘stringr’ was built under R version 4.2.3
-Warning: package ‘forcats’ was built under R version 4.2.3</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-output-begin eyJkYXRhIjoi4pSA4pSAIEF0dGFjaGluZyBjb3JlIHRpZHl2ZXJzZSBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlIDIuMC4wIOKUgOKUgFxu4pyUIGZvcmNhdHMgMS4wLjAgICAgIOKclCByZWFkciAgIDIuMS40XG7inJQgZ2dwbG90MiAzLjUuMSAgICAg4pyUIHN0cmluZ3IgMS41LjFcbuKclCBwdXJyciAgIDEuMC4yICAgICDinJQgdGlkeXIgICAxLjMuMFxu4pSA4pSAIENvbmZsaWN0cyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeXZlcnNlX2NvbmZsaWN0cygpIOKUgOKUgFxu4pyWIGRhdGEudGFibGU6OmJldHdlZW4oKSBtYXNrcyBkcGx5cjo6YmV0d2VlbigpXG7inJYgZHBseXI6OmZpbHRlcigpICAgICAgIG1hc2tzIHN0YXRzOjpmaWx0ZXIoKVxu4pyWIGRhdGEudGFibGU6OmZpcnN0KCkgICBtYXNrcyBkcGx5cjo6Zmlyc3QoKVxu4pyWIGRhdGEudGFibGU6OmhvdXIoKSAgICBtYXNrcyBsdWJyaWRhdGU6OmhvdXIoKVxu4pyWIGRhdGEudGFibGU6Omlzb3dlZWsoKSBtYXNrcyBsdWJyaWRhdGU6Omlzb3dlZWsoKVxu4pyWIGRwbHlyOjpsYWcoKSAgICAgICAgICBtYXNrcyBzdGF0czo6bGFnKClcbuKcliBkYXRhLnRhYmxlOjpsYXN0KCkgICAgbWFza3MgZHBseXI6Omxhc3QoKVxu4pyWIGRhdGEudGFibGU6Om1kYXkoKSAgICBtYXNrcyBsdWJyaWRhdGU6Om1kYXkoKVxu4pyWIGRhdGEudGFibGU6Om1pbnV0ZSgpICBtYXNrcyBsdWJyaWRhdGU6Om1pbnV0ZSgpXG7inJYgcHVycnI6Om1vZGlmeSgpICAgICAgIG1hc2tzIHJlbnY6Om1vZGlmeSgpXG7inJYgZGF0YS50YWJsZTo6bW9udGgoKSAgIG1hc2tzIGx1YnJpZGF0ZTo6bW9udGgoKVxu4pyWIGRhdGEudGFibGU6OnF1YXJ0ZXIoKSBtYXNrcyBsdWJyaWRhdGU6OnF1YXJ0ZXIoKVxu4pyWIGRhdGEudGFibGU6OnNlY29uZCgpICBtYXNrcyBsdWJyaWRhdGU6OnNlY29uZCgpXG7inJYgcHVycnI6OnRyYW5zcG9zZSgpICAgIG1hc2tzIGRhdGEudGFibGU6OnRyYW5zcG9zZSgpXG7inJYgZGF0YS50YWJsZTo6d2RheSgpICAgIG1hc2tzIGx1YnJpZGF0ZTo6d2RheSgpXG7inJYgZGF0YS50YWJsZTo6d2VlaygpICAgIG1hc2tzIGx1YnJpZGF0ZTo6d2VlaygpXG7inJYgZGF0YS50YWJsZTo6eWRheSgpICAgIG1hc2tzIGx1YnJpZGF0ZTo6eWRheSgpXG7inJYgZGF0YS50YWJsZTo6eWVhcigpICAgIG1hc2tzIGx1YnJpZGF0ZTo6eWVhcigpXG7ihLkgVXNlIHRoZSBcdTAwMWJdODs7aHR0cDovL2NvbmZsaWN0ZWQuci1saWIub3JnL1x1MDAwN2NvbmZsaWN0ZWQgcGFja2FnZVx1MDAxYl04OztcdTAwMDcgdG8gZm9yY2UgYWxsIGNvbmZsaWN0cyB0byBiZWNvbWUgZXJyb3JzXG4ifQ== -->
-<pre><code>── Attaching core tidyverse packages ─────────────────────── tidyverse 2.0.0 ──
-✔ forcats 1.0.0     ✔ readr   2.1.4
-✔ ggplot2 3.5.1     ✔ stringr 1.5.1
-✔ purrr   1.0.2     ✔ tidyr   1.3.0
-── Conflicts ───────────────────────────────────────── tidyverse_conflicts() ──
-✖ data.table::between() masks dplyr::between()
-✖ dplyr::filter()       masks stats::filter()
-✖ data.table::first()   masks dplyr::first()
-✖ data.table::hour()    masks lubridate::hour()
-✖ data.table::isoweek() masks lubridate::isoweek()
-✖ dplyr::lag()          masks stats::lag()
-✖ data.table::last()    masks dplyr::last()
-✖ data.table::mday()    masks lubridate::mday()
-✖ data.table::minute()  masks lubridate::minute()
-✖ purrr::modify()       masks renv::modify()
-✖ data.table::month()   masks lubridate::month()
-✖ data.table::quarter() masks lubridate::quarter()
-✖ data.table::second()  masks lubridate::second()
-✖ purrr::transpose()    masks data.table::transpose()
-✖ data.table::wday()    masks lubridate::wday()
-✖ data.table::week()    masks lubridate::week()
-✖ data.table::yday()    masks lubridate::yday()
-✖ data.table::year()    masks lubridate::year()
-ℹ Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkcGx5cilcbmxpYnJhcnkoaWdyYXBoKVxuYGBgIn0= -->
-<pre class="r"><code>library(dplyr)
-library(igraph)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogcGFja2FnZSDigJhpZ3JhcGjigJkgd2FzIGJ1aWx0IHVuZGVyIFIgdmVyc2lvbiA0LjIuM1xuXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYaWdyYXBo4oCZXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20g4oCYcGFja2FnZTpwdXJycuKAmTpcblxuICAgIGNvbXBvc2UsIHNpbXBsaWZ5XG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0IGlzIG1hc2tlZCBmcm9tIOKAmHBhY2thZ2U6dGlkeXLigJk6XG5cbiAgICBjcm9zc2luZ1xuXG5UaGUgZm9sbG93aW5nIG9iamVjdCBpcyBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOnRpYmJsZeKAmTpcblxuICAgIGFzX2RhdGFfZnJhbWVcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmx1YnJpZGF0ZeKAmTpcblxuICAgICUtLSUsIHVuaW9uXG5cblRoZSBmb2xsb3dpbmcgb2JqZWN0cyBhcmUgbWFza2VkIGZyb20g4oCYcGFja2FnZTpkcGx5cuKAmTpcblxuICAgIGFzX2RhdGFfZnJhbWUsIGdyb3VwcywgdW5pb25cblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOnN0YXRz4oCZOlxuXG4gICAgZGVjb21wb3NlLCBzcGVjdHJ1bVxuXG5UaGUgZm9sbG93aW5nIG9iamVjdCBpcyBtYXNrZWQgZnJvbSDigJhwYWNrYWdlOmJhc2XigJk6XG5cbiAgICB1bmlvblxuIn0= -->
-<pre><code>Warning: package ‘igraph’ was built under R version 4.2.3
-
-Attaching package: ‘igraph’
-
-The following objects are masked from ‘package:purrr’:
-
-    compose, simplify
-
-The following object is masked from ‘package:tidyr’:
-
-    crossing
-
-The following object is masked from ‘package:tibble’:
-
-    as_data_frame
-
-The following objects are masked from ‘package:lubridate’:
-
-    %--%, union
-
-The following objects are masked from ‘package:dplyr’:
-
-    as_data_frame, groups, union
-
-The following objects are masked from ‘package:stats’:
-
-    decompose, spectrum
-
-The following object is masked from ‘package:base’:
-
-    union</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3JhcGgpXG5gYGAifQ== -->
-<pre class="r"><code>library(ggraph)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogcGFja2FnZSDigJhnZ3JhcGjigJkgd2FzIGJ1aWx0IHVuZGVyIFIgdmVyc2lvbiA0LjIuM1xuIn0= -->
-<pre><code>Warning: package ‘ggraph’ was built under R version 4.2.3</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShzdmdsaXRlKVxuYGBgIn0= -->
-<pre class="r"><code>library(svglite)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogcGFja2FnZSDigJhzdmdsaXRl4oCZIHdhcyBidWlsdCB1bmRlciBSIHZlcnNpb24gNC4yLjNcbiJ9 -->
-<pre><code>Warning: package ‘svglite’ was built under R version 4.2.3</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -1858,6 +1778,11 @@ source(file.path(my_wd,&quot;functions/functions_analysis.R&quot;))</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudHNfZGF0YV9wYXRoID0gcGFzdGUoZ2V0d2QoKSxcIi9kYXRhL3RydXRoX3NvY2lhbF9kYXRhXCIsIHNlcD1cIlwiKVxudHNfbm9kZXMgPC0gcmVhZF90c3ZfZmlsZXMoZmlsZS5wYXRoKHRzX2RhdGFfcGF0aCwgXCJ1c2Vyc1wiKSlcbnRzX2VkZ2VzIDwtIHJlYWRfdHN2X2ZpbGVzKGZpbGUucGF0aCh0c19kYXRhX3BhdGgsIFwiZm9sbG93c1wiKSlcbmBgYCJ9 -->
+<pre class="r"><code>ts_data_path = paste(getwd(),&quot;/data/truth_social_data&quot;, sep=&quot;&quot;)
+ts_nodes &lt;- read_tsv_files(file.path(ts_data_path, &quot;users&quot;))
+ts_edges &lt;- read_tsv_files(file.path(ts_data_path, &quot;follows&quot;))</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -1878,49 +1803,9 @@ colnames(ts_edges)&lt;-c(&quot;source&quot;, &quot;target&quot;)</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2hlY2tfYXBwZW5kX21pc3Npbmdfbm9kZXMgPC0gZnVuY3Rpb24oZWRnZV90YmwsIG5vZGVfdGJsKSB7XG4gIGlmIChhbGwoZWRnZV90Ymwkc291cmNlICVpbiUgbm9kZV90YmwkaWQpICYmIGFsbChlZGdlX3RibCR0YXJnZXQgJWluJSBub2RlX3RibCRpZCkpIHtcbiAgcHJpbnQoXCJBbGwgdmVydGV4IG5hbWVzIGhhdmUgYmVlbiBmb3VuZC5cIilcbiAgfSBlbHNlIHtcbiAgICBwcmludChcIlNvbWUgdmVydGV4IG5hbWVzIGFyZSBtaXNzaW5nLlwiKVxuICAgIGlmICghYWxsKGVkZ2VfdGJsJHNvdXJjZSAlaW4lIG5vZGVfdGJsJGlkKSkge1xuICAgICAgcHJpbnQoXCJNaXNzaW5nIHNvdXJjZSBub2Rlc1wiKVxuICAgICAgbWlzc2luZ192YWx1ZSA8LSBzZXRkaWZmKGVkZ2VfdGJsJHNvdXJjZSwgbm9kZV90YmwkaWQpXG4gICAgICBwcmludChtaXNzaW5nX3ZhbHVlKVxuICAgIH1cbiAgICBpZiAoIWFsbChlZGdlX3RibCR0YXJnZXQgJWluJSBub2RlX3RibCRpZCkpIHtcbiAgICAgIHByaW50KFwiTWlzc2luZyB0YXJnZXQgbm9kZXNcIilcbiAgICAgIG1pc3NpbmdfdmFsdWUgPC0gc2V0ZGlmZihlZGdlX3RibCR0YXJnZXQsIG5vZGVfdGJsJGlkKVxuICAgICAgcHJpbnQobWlzc2luZ192YWx1ZSlcbiAgICB9XG4gICAgbWF0Y2hfaW5kZXggPC0gd2hpY2goXG4gICAgICBzdHJfZGV0ZWN0KHRvbG93ZXIobm9kZV90YmwkaWQpLCBmaXhlZCh0b2xvd2VyKG1pc3NpbmdfdmFsdWUpKSkgfCBcbiAgICAgIHN0cl9kZXRlY3QodG9sb3dlcihtaXNzaW5nX3ZhbHVlKSwgZml4ZWQodG9sb3dlcihub2RlX3RibCRpZCkpKVxuICAgIClcbiAgICBpZiAobGVuZ3RoKG1hdGNoX2luZGV4KT4wKSB7XG4gICAgICBwcmludChcIlNpbWlsYXIgcmVjb3JkIGZvdW5kLCBvdmVyd3JpdGluZyBieSBtaXNzaW5nIG5hbWVcIilcbiAgICAgIHByaW50KHBhc3RlKFwiT3ZlcndyaXR0ZW46XCIsbm9kZV90YmwkaWRbbWF0Y2hfaW5kZXhbMV1dKSlcbiAgICAgIHByaW50KHBhc3RlKFwiTmV3IHZhbHVlOlwiLG1pc3NpbmdfdmFsdWUpKVxuICAgICAgbm9kZV90YmwkaWRbbWF0Y2hfaW5kZXhbMV1dIDwtIG1pc3NpbmdfdmFsdWVcbiAgICB9IGVsc2Uge1xuICAgICAgcHJpbnQoXCJObyBzaW1pbGFyIHJlY29yZCBmb3VuZCwgYXBwZW5kaW5nIG1pc3NpbmcgcmVjb3JkLlwiKVxuICAgICAgbm9kZV90YmwgPC0gcmJpbmQobm9kZV90YmwsIGRhdGEuZnJhbWUoaWQgPSBtaXNzaW5nX3ZhbHVlLCB1c2VybmFtZSA9IG1pc3NpbmdfdmFsdWUpKVxuICAgIH1cbiAgfVxuICByZXR1cm4obm9kZV90YmwpXG59XG5cbnRzX25vZGVzIDwtIGNoZWNrX2FwcGVuZF9taXNzaW5nX25vZGVzKHRzX2VkZ2VzLCB0c19ub2RlcylcbmBgYCJ9 -->
-<pre class="r"><code>check_append_missing_nodes &lt;- function(edge_tbl, node_tbl) {
-  if (all(edge_tbl$source %in% node_tbl$id) &amp;&amp; all(edge_tbl$target %in% node_tbl$id)) {
-  print(&quot;All vertex names have been found.&quot;)
-  } else {
-    print(&quot;Some vertex names are missing.&quot;)
-    if (!all(edge_tbl$source %in% node_tbl$id)) {
-      print(&quot;Missing source nodes&quot;)
-      missing_value &lt;- setdiff(edge_tbl$source, node_tbl$id)
-      print(missing_value)
-    }
-    if (!all(edge_tbl$target %in% node_tbl$id)) {
-      print(&quot;Missing target nodes&quot;)
-      missing_value &lt;- setdiff(edge_tbl$target, node_tbl$id)
-      print(missing_value)
-    }
-    match_index &lt;- which(
-      str_detect(tolower(node_tbl$id), fixed(tolower(missing_value))) | 
-      str_detect(tolower(missing_value), fixed(tolower(node_tbl$id)))
-    )
-    if (length(match_index)&gt;0) {
-      print(&quot;Similar record found, overwriting by missing name&quot;)
-      print(paste(&quot;Overwritten:&quot;,node_tbl$id[match_index[1]]))
-      print(paste(&quot;New value:&quot;,missing_value))
-      node_tbl$id[match_index[1]] &lt;- missing_value
-    } else {
-      print(&quot;No similar record found, appending missing record.&quot;)
-      node_tbl &lt;- rbind(node_tbl, data.frame(id = missing_value, username = missing_value))
-    }
-  }
-  return(node_tbl)
-}
-
-ts_nodes &lt;- check_append_missing_nodes(ts_edges, ts_nodes)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudHNfbm9kZXMgPC0gY2hlY2tfYXBwZW5kX21pc3Npbmdfbm9kZXModHNfZWRnZXMsIHRzX25vZGVzKVxuYGBgIn0= -->
+<pre class="r"><code>ts_nodes &lt;- check_append_missing_nodes(ts_edges, ts_nodes)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiU29tZSB2ZXJ0ZXggbmFtZXMgYXJlIG1pc3NpbmcuXCJcblsxXSBcIk1pc3NpbmcgdGFyZ2V0IG5vZGVzXCJcblsxXSA5N1xuWzFdIFwiU2ltaWxhciByZWNvcmQgZm91bmQsIG92ZXJ3cml0aW5nIGJ5IG1pc3NpbmcgbmFtZVwiXG5bMV0gXCJPdmVyd3JpdHRlbjogMTI5N1wiXG5bMV0gXCJOZXcgdmFsdWU6IDk3XCJcbiJ9 -->
-<pre><code>[1] &quot;Some vertex names are missing.&quot;
-[1] &quot;Missing target nodes&quot;
-[1] 97
-[1] &quot;Similar record found, overwriting by missing name&quot;
-[1] &quot;Overwritten: 1297&quot;
-[1] &quot;New value: 97&quot;</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -1932,20 +1817,6 @@ ts_nodes &lt;- check_append_missing_nodes(ts_edges, ts_nodes)</code></pre>
   vertices = ts_nodes
 ))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiSUdSQVBIIGIzYmFhM2MgRE4tLSA0NTQ0NTggNDAwMjExNSAtLSBcbisgYXR0cjogbmFtZSAodi9jKSwgdXNlcm5hbWUgKHYvYylcbisgZWRnZXMgZnJvbSBiM2JhYTNjICh2ZXJ0ZXggbmFtZXMpOlxuICBbMV0gMTI0NzUtPjIyMDI1IDEyNDc1LT4yMjAyNiAxMjQ3NS0+MjIwMjcgMTI0NzUtPjIyMDI4IDEyNDc1LT4xNzI4MCAxMjQ3NS0+MjIwMjkgMTI0NzUtPjEwNDc1IDEyNDc1LT4yMjAzMCAxMjQ3NS0+MjIwMzEgMTI0NzUtPjEwNjM5IDEyNDc1LT4yMjAzMiAxMjQ3NS0+MjIwMzMgMTI0NzUtPjIyMDM0XG4gWzE0XSAxMjQ3NS0+MjIwMzUgMTI0NzUtPjIyMDM2IDEyNDc1LT4yMjAzNyAxMjQ3NS0+MjIwMzggMTI0NzUtPjIyMDM5IDEyNDc1LT4yMjA0MCAxMjQ3NS0+MTU4NjIgMTI0NzUtPjIyMDQxIDEyNDc1LT4yMjA0MiAxMjQ3NS0+MTI5MzkgMTI0NzUtPjIyMDQzIDEyNDc1LT4yMjA0NCAxMjQ3NS0+MjIwNDVcbiBbMjddIDEyNDc1LT4yMjA0NiAxMjQ3NS0+MjIwNDcgMTI0NzUtPjIyMDQ4IDEyNDc1LT4yMjA0OSAxMjQ3NS0+MjIwNTAgMTI0NzUtPjIyMDUxIDEyNDc1LT4yMjA1MiAxMjQ3NS0+MjIwNTMgMTI0NzUtPjEwODg2IDEyNDc1LT43MjUwICAxMjQ3NS0+MjIwNTQgMTI0NzUtPjIyMDU1IDEyNDc1LT4yMjA1NlxuIFs0MF0gMTI0NzUtPjc5NzQgIDEyNDc1LT4yMjA1NyAxMjQ3NS0+MjIwNTggMTI0NzUtPjIyMDU5IDEyNDc1LT4yMjA2MCAxMjQ3NS0+MjIwNjEgMTI0NzUtPjIyMDYyIDEyNDc1LT4xNzYzMSAxMjQ3NS0+MjIwNjMgMTI0NzUtPjIyMDY0IDEyNDc1LT4yMjA2NSAxMjQ3NS0+MTM3OTcgMTI0NzUtPjIyMDY2XG4gWzUzXSAxMjQ3NS0+MTYyMjUgMTI0NzUtPjIyMDY3IDEyNDc1LT4xMTM2NCAxMjQ3NS0+MTcxNjEgMTI0NzUtPjIyMDY4IDEyNDc1LT4yMjA2OSAxMjQ3NS0+MjIwNzAgMTI0NzUtPjIyMDcxIDEyNDc1LT4yMjA3MiAxMjQ3NS0+MjIwNzMgMTI0NzUtPjEwNzgwIDEyNDc1LT4yMjA3NCAxMjQ3NS0+MTY1MTZcbiBbNjZdIDEyNDc1LT4yODQ2ICAxMjQ3NS0+MjIwNzUgMTI0NzUtPjIyMDc2IDEyNDc1LT4xMDk5OSAxMjQ3NS0+MjIwNzcgMTI0NzUtPjIyMDc4IDEyNDc1LT4yMjA3OSAxMjQ3NS0+MjIwODAgMTI0NzUtPjEyODYyIDEyNDc1LT4yMjA4MSAxMjQ3NS0+MjIwODIgMTI0NzUtPjIyMDgzIDEyNDc1LT4xMTcwNVxuIFs3OV0gMTI0NzUtPjIyMDg0IDEyNDc1LT4yMjA4NSAxMjQ3NS0+MjIwODYgMTI0NzUtPjEwNzU3IDEyNDc1LT4yNDcyICAxMjQ3NS0+MjIwODcgMTI0NzUtPjIyMDg4IDEyNDc1LT4xNTY5MCAxMjQ3NS0+MjIwODkgMTI0NzUtPjEyNzUxIDEyNDc1LT42MDYyICAxMjQ3NS0+MjIwOTAgMTI0NzUtPjIyMDkxXG4gWzkyXSAxMjQ3NS0+MTMyMjggMTI0NzUtPjIyMDkyIDEyNDc1LT4yMjA5MyAxMjQ3NS0+MTE3NDQgMTI0NzUtPjE1MzcyIDEyNDc1LT4yMjA5NCAxMjQ3NS0+MTQ1ODggMTI0NzUtPjIyMDk1IDEyNDc1LT4yMjA5NiAxMjQ3NS0+MjIwOTcgMTI0NzUtPjE2MjY5IDEyNDc1LT40MjgxICAxMjQ3NS0+MjIwOThcbisgLi4uIG9taXR0ZWQgc2V2ZXJhbCBlZGdlc1xuIn0= -->
-<pre><code>IGRAPH b3baa3c DN-- 454458 4002115 -- 
-+ attr: name (v/c), username (v/c)
-+ edges from b3baa3c (vertex names):
-  [1] 12475-&gt;22025 12475-&gt;22026 12475-&gt;22027 12475-&gt;22028 12475-&gt;17280 12475-&gt;22029 12475-&gt;10475 12475-&gt;22030 12475-&gt;22031 12475-&gt;10639 12475-&gt;22032 12475-&gt;22033 12475-&gt;22034
- [14] 12475-&gt;22035 12475-&gt;22036 12475-&gt;22037 12475-&gt;22038 12475-&gt;22039 12475-&gt;22040 12475-&gt;15862 12475-&gt;22041 12475-&gt;22042 12475-&gt;12939 12475-&gt;22043 12475-&gt;22044 12475-&gt;22045
- [27] 12475-&gt;22046 12475-&gt;22047 12475-&gt;22048 12475-&gt;22049 12475-&gt;22050 12475-&gt;22051 12475-&gt;22052 12475-&gt;22053 12475-&gt;10886 12475-&gt;7250  12475-&gt;22054 12475-&gt;22055 12475-&gt;22056
- [40] 12475-&gt;7974  12475-&gt;22057 12475-&gt;22058 12475-&gt;22059 12475-&gt;22060 12475-&gt;22061 12475-&gt;22062 12475-&gt;17631 12475-&gt;22063 12475-&gt;22064 12475-&gt;22065 12475-&gt;13797 12475-&gt;22066
- [53] 12475-&gt;16225 12475-&gt;22067 12475-&gt;11364 12475-&gt;17161 12475-&gt;22068 12475-&gt;22069 12475-&gt;22070 12475-&gt;22071 12475-&gt;22072 12475-&gt;22073 12475-&gt;10780 12475-&gt;22074 12475-&gt;16516
- [66] 12475-&gt;2846  12475-&gt;22075 12475-&gt;22076 12475-&gt;10999 12475-&gt;22077 12475-&gt;22078 12475-&gt;22079 12475-&gt;22080 12475-&gt;12862 12475-&gt;22081 12475-&gt;22082 12475-&gt;22083 12475-&gt;11705
- [79] 12475-&gt;22084 12475-&gt;22085 12475-&gt;22086 12475-&gt;10757 12475-&gt;2472  12475-&gt;22087 12475-&gt;22088 12475-&gt;15690 12475-&gt;22089 12475-&gt;12751 12475-&gt;6062  12475-&gt;22090 12475-&gt;22091
- [92] 12475-&gt;13228 12475-&gt;22092 12475-&gt;22093 12475-&gt;11744 12475-&gt;15372 12475-&gt;22094 12475-&gt;14588 12475-&gt;22095 12475-&gt;22096 12475-&gt;22097 12475-&gt;16269 12475-&gt;4281  12475-&gt;22098
-+ ... omitted several edges</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>If you want to use the previously generated graph, you can load it in
@@ -1962,23 +1833,86 @@ this way.</p>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ190c19hbmFseXNpcyA8LSBncmFwaF9tYWluX2FuYWx5c2lzKGdfdHMpXG5gYGAifQ== -->
 <pre class="r"><code>g_ts_analysis &lt;- graph_main_analysis(g_ts)</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiRmluZGluZyBncmFwaCBvcmRlclwiXG5bMV0gXCJGaW5kaW5nIGdyYXBoIHNpemVcIlxuWzFdIFwiRmluZGluZyBkZWdyZWUgc3RhdGlzdGljc1wiXG5bMV0gXCJGaW5kaW5nIGNvbm5lY3Rpdml0eSBzdGF0aXN0aWNzXCJcblsxXSBcIkZpbmRpbmcgZGlzdGFuY2Ugc3RhdGlzdGljc1wiXG5bMV0gXCJGaW5kaW5nIHRyYW5zaXRpdml0eVwiXG5bMV0gXCJGaW5kaW5nIGRlZ3JlZSBjZW50cmFsaXR5XCJcblsxXSBcIkZpbmRpbmcgZWlnZW52ZWN0b3IgY2VudHJhbGl0eVwiXG4ifQ== -->
+<pre><code>[1] &quot;Finding graph order&quot;
+[1] &quot;Finding graph size&quot;
+[1] &quot;Finding degree statistics&quot;
+[1] &quot;Finding connectivity statistics&quot;
+[1] &quot;Finding distance statistics&quot;
+[1] &quot;Finding transitivity&quot;
+[1] &quot;Finding degree centrality&quot;
+[1] &quot;Finding eigenvector centrality&quot;</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiT3JkZXI6IFwiLCBnX3RzX2FuYWx5c2lzJG9yZGVyLCBcIlxcblwiKVxuY2F0KFwiU2l6ZTogXCIsIGdfdHNfYW5hbHlzaXMkc2l6ZSwgXCJcXG5cIilcbmNhdChcIkRlZ3JlZSByYW5nZTogXCIsIGdfdHNfYW5hbHlzaXMkZGVncmVlX21pbiwgXCIgLSBcIiwgZ190c19hbmFseXNpcyRkZWdyZWVfbWF4LCBcIlxcblwiKVxuY2F0KFwiSW5kZWdyZWUgcmFuZ2U6IFwiLCBnX3RzX2FuYWx5c2lzJGluZGVncmVlX21pbiwgXCIgLSBcIiwgZ190c19hbmFseXNpcyRpbmRlZ3JlZV9tYXgsIFwiXFxuXCIpXG5jYXQoXCJPdXRkZWdyZWUgcmFuZ2U6IFwiLCBnX3RzX2FuYWx5c2lzJG91dGRlZ3JlZV9taW4sIFwiIC0gXCIsIGdfdHNfYW5hbHlzaXMkb3V0ZGVncmVlX21heCwgXCJcXG5cIilcbmNhdChcIkNsdXN0ZXJzICh3ZWFrIC8gc3Ryb25nKTogXCIsIGdfdHNfYW5hbHlzaXMkY2x1c3RlcnMkd2VhaywgXCIgLyBcIiwgZ190c19hbmFseXNpcyRjbHVzdGVycyRzdHJvbmcsIFwiXFxuXCIpXG5jYXQoXCJFZGdlIGNvbm5lY3Rpdml0eTogXCIsIGdfdHNfYW5hbHlzaXMkZV9jb24sIFwiXFxuXCIpXG5jYXQoXCJWZXJ0ZXggY29ubmVjdGl2aXR5OiBcIiwgZ190c19hbmFseXNpcyR2X2NvbiwgXCJcXG5cIilcbmNhdChcIkRpYW1ldGVyOiBcIiwgZ190c19hbmFseXNpcyRkaWFtZXRlciwgXCJcXG5cIilcbmNhdChcIkF2ZXJhZ2UgcGF0aCBsZW5ndGg6IFwiLCBnX3RzX2FuYWx5c2lzJGFwbCwgXCJcXG5cIilcbmNhdChcIlRyYW5zaXRpdml0eTogXCIsIGdfdHNfYW5hbHlzaXMkdHJhbnNpdGl2aXR5LCBcIlxcblwiKVxuYGBgIn0= -->
-<pre class="r"><code>cat(&quot;Order: &quot;, g_ts_analysis$order, &quot;\n&quot;)
-cat(&quot;Size: &quot;, g_ts_analysis$size, &quot;\n&quot;)
-cat(&quot;Degree range: &quot;, g_ts_analysis$degree_min, &quot; - &quot;, g_ts_analysis$degree_max, &quot;\n&quot;)
-cat(&quot;Indegree range: &quot;, g_ts_analysis$indegree_min, &quot; - &quot;, g_ts_analysis$indegree_max, &quot;\n&quot;)
-cat(&quot;Outdegree range: &quot;, g_ts_analysis$outdegree_min, &quot; - &quot;, g_ts_analysis$outdegree_max, &quot;\n&quot;)
-cat(&quot;Clusters (weak / strong): &quot;, g_ts_analysis$clusters$weak, &quot; / &quot;, g_ts_analysis$clusters$strong, &quot;\n&quot;)
-cat(&quot;Edge connectivity: &quot;, g_ts_analysis$e_con, &quot;\n&quot;)
-cat(&quot;Vertex connectivity: &quot;, g_ts_analysis$v_con, &quot;\n&quot;)
-cat(&quot;Diameter: &quot;, g_ts_analysis$diameter, &quot;\n&quot;)
-cat(&quot;Average path length: &quot;, g_ts_analysis$apl, &quot;\n&quot;)
-cat(&quot;Transitivity: &quot;, g_ts_analysis$transitivity, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiT3JkZXI6IFwiLCBnX3RzX2FuYWx5c2lzJG9yZGVyLCBcIlxcblwiKVxuYGBgIn0= -->
+<pre class="r"><code>cat(&quot;Order: &quot;, g_ts_analysis$order, &quot;\n&quot;)</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiT3JkZXI6ICA0NTQ0NTggXG4ifQ== -->
+<pre><code>Order:  454458 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiU2l6ZTogXCIsIGdfdHNfYW5hbHlzaXMkc2l6ZSwgXCJcXG5cIilcbmBgYCJ9 -->
+<pre class="r"><code>cat(&quot;Size: &quot;, g_ts_analysis$size, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiU2l6ZTogIDQwMDIxMTUgXG4ifQ== -->
+<pre><code>Size:  4002115 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiRGVncmVlIHJhbmdlOiBcIiwgZ190c19hbmFseXNpcyRkZWdyZWVfbWluLCBcIiAtIFwiLCBnX3RzX2FuYWx5c2lzJGRlZ3JlZV9tYXgsIFwiXFxuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>cat(&quot;Degree range: &quot;, g_ts_analysis$degree_min, &quot; - &quot;, g_ts_analysis$degree_max, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRGVncmVlIHJhbmdlOiAgMCAgLSAgMjk4OTAgXG4ifQ== -->
+<pre><code>Degree range:  0  -  29890 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiSW5kZWdyZWUgcmFuZ2U6IFwiLCBnX3RzX2FuYWx5c2lzJGluZGVncmVlX21pbiwgXCIgLSBcIiwgZ190c19hbmFseXNpcyRpbmRlZ3JlZV9tYXgsIFwiXFxuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>cat(&quot;Indegree range: &quot;, g_ts_analysis$indegree_min, &quot; - &quot;, g_ts_analysis$indegree_max, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiSW5kZWdyZWUgcmFuZ2U6ICAwICAtICAxODQzIFxuIn0= -->
+<pre><code>Indegree range:  0  -  1843 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiT3V0ZGVncmVlIHJhbmdlOiBcIiwgZ190c19hbmFseXNpcyRvdXRkZWdyZWVfbWluLCBcIiAtIFwiLCBnX3RzX2FuYWx5c2lzJG91dGRlZ3JlZV9tYXgsIFwiXFxuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>cat(&quot;Outdegree range: &quot;, g_ts_analysis$outdegree_min, &quot; - &quot;, g_ts_analysis$outdegree_max, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiT3V0ZGVncmVlIHJhbmdlOiAgMCAgLSAgMjk1NTAgXG4ifQ== -->
+<pre><code>Outdegree range:  0  -  29550 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiQ2x1c3RlcnMgKHdlYWsgLyBzdHJvbmcpOiBcIiwgZ190c19hbmFseXNpcyRjbHVzdGVycyR3ZWFrLCBcIiAvIFwiLCBnX3RzX2FuYWx5c2lzJGNsdXN0ZXJzJHN0cm9uZywgXCJcXG5cIilcbmBgYCJ9 -->
+<pre class="r"><code>cat(&quot;Clusters (weak / strong): &quot;, g_ts_analysis$clusters$weak, &quot; / &quot;, g_ts_analysis$clusters$strong, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiQ2x1c3RlcnMgKHdlYWsgLyBzdHJvbmcpOiAgOTUwOCAgLyAgNDUyMDQyIFxuIn0= -->
+<pre><code>Clusters (weak / strong):  9508  /  452042 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiRWRnZSBjb25uZWN0aXZpdHk6IFwiLCBnX3RzX2FuYWx5c2lzJGVfY29uLCBcIlxcblwiKVxuYGBgIn0= -->
+<pre class="r"><code>cat(&quot;Edge connectivity: &quot;, g_ts_analysis$e_con, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRWRnZSBjb25uZWN0aXZpdHk6ICAwIFxuIn0= -->
+<pre><code>Edge connectivity:  0 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiVmVydGV4IGNvbm5lY3Rpdml0eTogXCIsIGdfdHNfYW5hbHlzaXMkdl9jb24sIFwiXFxuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>cat(&quot;Vertex connectivity: &quot;, g_ts_analysis$v_con, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiVmVydGV4IGNvbm5lY3Rpdml0eTogIDAgXG4ifQ== -->
+<pre><code>Vertex connectivity:  0 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiRGlhbWV0ZXI6IFwiLCBnX3RzX2FuYWx5c2lzJGRpYW1ldGVyLCBcIlxcblwiKVxuYGBgIn0= -->
+<pre class="r"><code>cat(&quot;Diameter: &quot;, g_ts_analysis$diameter, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRGlhbWV0ZXI6ICA5IFxuIn0= -->
+<pre><code>Diameter:  9 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiQXZlcmFnZSBwYXRoIGxlbmd0aDogXCIsIGdfdHNfYW5hbHlzaXMkYXBsLCBcIlxcblwiKVxuYGBgIn0= -->
+<pre class="r"><code>cat(&quot;Average path length: &quot;, g_ts_analysis$apl, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiQXZlcmFnZSBwYXRoIGxlbmd0aDogIDMuMjc0NTk4IFxuIn0= -->
+<pre><code>Average path length:  3.274598 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2F0KFwiVHJhbnNpdGl2aXR5OiBcIiwgZ190c19hbmFseXNpcyR0cmFuc2l0aXZpdHksIFwiXFxuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>cat(&quot;Transitivity: &quot;, g_ts_analysis$transitivity, &quot;\n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiVHJhbnNpdGl2aXR5OiAgMC4wMTA0Njg2NiBcbiJ9 -->
+<pre><code>Transitivity:  0.01046866 </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -2035,7 +1969,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("DSAI 2.Rmd");
+  window.initializeSourceEmbed("ts_analysis initial.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

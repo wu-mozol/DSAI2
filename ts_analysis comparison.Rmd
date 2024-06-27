@@ -10,7 +10,7 @@ output:
 
 # Truth Social analysis
 
-This notebook is responsible for the comparative analysis of the Truth Social data set acquired from the work of Gerard, Botzer and Weininger (2023). The original data was not read into this notebook, due to it's size. The first analysis was ran on a VM and the results are submitted along this notebook.
+This notebook is responsible for the comparative analysis of the Truth Social data set acquired from the work of Gerard, Botzer and Weininger (2023).
 
 The Truth Social graph is compared with model graphs:
 * Erdős-Rényi or Gnp graph.
@@ -18,23 +18,6 @@ The Truth Social graph is compared with model graphs:
 * Barabási-Albert, a preferential attachment graph model.
 
 The graph models are a 1:10 scale version of the estimated total size of the Truth Social network size in the Autumn of 2022. These model are then scraped using a similar BFS method as by Gerard et al. (2023). Based on our assumptions these samples are idealized reproductions of the Truth Social sample. The descriptive statistics of the data is copied over and the graph model descriptive statistics are calculated in this notebook.
-
-## Data from the analysis of Truth Social
-
-| Metric                       | Truth Social    |
-| ------                       | ------------    |
-| Order                        | 454459          |
-| Size                         | 4002115         |
-| Degree range                 | 0 - 29890       |
-| Indegree range               | 0 - 1843        |
-| Outdegree range              | 0 - 29550       |
-| Components (weak/strong)     | 9589 / 452043   |
-| Connection                   | Disconnected    |
-| Edge connectivity            | 0               |
-| Vertex connectivity          | 0               |
-| Diameter                     | 9               |
-| MPL                          | 3.274598        |
-| Transitivity                 | 0.01046866      |
 
 ## Libraries
 The notebook uses the following libraries.
@@ -55,11 +38,76 @@ usethis::proj_set(project)
 source(file.path(my_wd,"functions/functions_analysis.R"))
 ```
 
-## Write Truth Social information
+
+## The Truth Social sample
+The Truth Social sample relevant to graph topology analysis is stored and users.tsv and follows.tsv in the original dataset. Due to GitHub's size limitations this had to be split up and now they are contained in portions in folders of the respective name. See the attached readme file from the original authors to get a better understanding on the data. This split needs somen caretaking.
+
+Then the data will be read into a graph and analysis function will return its descriptive statistics.
+
+### Read and clean the data
+```{r}
+ts_data_path = paste(getwd(),"/data/truth_social_data", sep="")
+ts_nodes <- read_tsv_files(file.path(ts_data_path, "users"))
+ts_edges <- read_tsv_files(file.path(ts_data_path, "follows"))
+```
+
+```{r}
+ts_nodes <- ts_nodes %>% select(id, username)
+ts_edges <- ts_edges %>% select(follower, followed)
+```
+
+```{r}
+colnames(ts_nodes)<-c("id", "username")
+colnames(ts_edges)<-c("source", "target")
+```
+
+```{r}
+ts_nodes <- check_append_missing_nodes(ts_edges, ts_nodes)
+```
+
+### Creat graph representation
+```{r}
+(g_ts <- igraph::graph_from_data_frame(
+  d = ts_edges,
+  directed = TRUE,
+  vertices = ts_nodes
+))
+```
+If you want to use the previously generated graph, you can load it in this way.
+```{r}
+g_ts <- read_graph(file.path(my_wd,"/graph/ts.csv"), "edgelist", directed=TRUE)
+```
+
+# Analysis
+```{r}
+g_ts_analysis <- graph_main_analysis(g_ts)
+```
+
+```{r}
+cat("Order: ", g_ts_analysis$order, "\n")
+cat("Size: ", g_ts_analysis$size, "\n")
+cat("Degree range: ", g_ts_analysis$degree_min, " - ", g_ts_analysis$degree_max, "\n")
+cat("Indegree range: ", g_ts_analysis$indegree_min, " - ", g_ts_analysis$indegree_max, "\n")
+cat("Outdegree range: ", g_ts_analysis$outdegree_min, " - ", g_ts_analysis$outdegree_max, "\n")
+cat("Clusters (weak / strong): ", g_ts_analysis$clusters$weak, " / ", g_ts_analysis$clusters$strong, "\n")
+cat("Edge connectivity: ", g_ts_analysis$e_con, "\n")
+cat("Vertex connectivity: ", g_ts_analysis$v_con, "\n")
+cat("Diameter: ", g_ts_analysis$diameter, "\n")
+cat("Average path length: ", g_ts_analysis$apl, "\n")
+cat("Transitivity: ", g_ts_analysis$transitivity, "\n")
+```
+
+### Save
+```{r}
+write_graph(g_ts,file.path(my_wd,"/graph/ts.csv"),"edgelist")
+```
+
+
+### Write Truth Social information
 We store the Truth Social network information in the following variables.
 ```{r}
-ts_sample_order <- 454459
-ts_sample_size <- 4002115
+ts_sample_order <- g_ts_analysis$order
+ts_sample_size <- g_ts_analysis$size
 ts_sample_p <- 2*ts_sample_size/(ts_sample_order*(ts_sample_order-1))
 ```
 
