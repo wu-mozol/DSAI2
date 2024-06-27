@@ -37,7 +37,7 @@ Make sure to set you wd to the project folder.
 ```{r}
 my_wd <- getwd()
 project <- file.path(my_wd)
-usethis::create_project(project, open = FALSE)
+#usethis::create_project(project, open = FALSE)
 usethis::proj_set(project)
 source(file.path(my_wd,"functions/functions_scrape.R"))
 ```
@@ -123,9 +123,6 @@ Set runs to determine run time. Each run fetches 10 new nodes with 40 followees.
 ```{r}
 ### Iterative version of scraping
 runs <- 6
-
-
-
 for (i in 1:runs) {
   # Load the current state from RDS files
   queue <- readRDS(file.path(my_wd, "data/mastodon_data/queue.rds"))
