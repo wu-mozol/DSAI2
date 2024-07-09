@@ -21,6 +21,8 @@ The graph models are a 1:10 scale version of the estimated total size of the Tru
 
 ## Libraries
 The notebook uses the following libraries.
+
+**Run**
 ```{r warning=FALSE}
 library(ggraph)
 library(igraph)
@@ -28,8 +30,9 @@ library(svglite)
 ```
 ## Project setup
 First, the wd needs to be set up.
-
 Make sure to set you wd to the project folder.
+
+**Read before run**: uncomment create_project and specify new Rproj file if this is a new setup. Otherwise leave it be.
 ```{r}
 my_wd <- getwd()
 project <- file.path(my_wd)
@@ -38,34 +41,41 @@ usethis::proj_set(project)
 source(file.path(my_wd,"functions/functions_analysis.R"))
 ```
 
-
 ## The Truth Social sample
 The Truth Social sample relevant to graph topology analysis is stored and users.tsv and follows.tsv in the original dataset. Due to GitHub's size limitations this had to be split up and now they are contained in portions in folders of the respective name. See the attached readme file from the original authors to get a better understanding on the data. This split needs somen caretaking.
 
 Then the data will be read into a graph and analysis function will return its descriptive statistics.
 
 ### Read and clean the data
+The data is troed in multiple cut up .tsv files. It needs to be cleaned (select only relevant data), processed (check graph representation conformity).
+
+**Read before run**: The next few chunks only need to be read in, if the edgelist represenation pre-saved is lost.
 ```{r}
 ts_data_path = paste(getwd(),"/data/truth_social_data", sep="")
 ts_nodes <- read_tsv_files(file.path(ts_data_path, "users"))
 ts_edges <- read_tsv_files(file.path(ts_data_path, "follows"))
 ```
 
+**Read before run**: See above
 ```{r}
 ts_nodes <- ts_nodes %>% select(id, username)
 ts_edges <- ts_edges %>% select(follower, followed)
 ```
 
+**Read before run**: See above
 ```{r}
 colnames(ts_nodes)<-c("id", "username")
 colnames(ts_edges)<-c("source", "target")
 ```
 
+**Read before run**: See above
 ```{r}
 ts_nodes <- check_append_missing_nodes(ts_edges, ts_nodes)
 ```
 
 ### Creat graph representation
+
+**Read before run**: See above
 ```{r}
 (g_ts <- igraph::graph_from_data_frame(
   d = ts_edges,
@@ -73,16 +83,18 @@ ts_nodes <- check_append_missing_nodes(ts_edges, ts_nodes)
   vertices = ts_nodes
 ))
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_ts <- read_graph(file.path(my_wd,"/graph/ts.csv"), "edgelist", directed=TRUE)
 ```
 
-# Analysis
+### Analysis
+**Run**
 ```{r}
 g_ts_analysis <- graph_main_analysis(g_ts)
 ```
-
+**Run**
 ```{r}
 cat("Order: ", g_ts_analysis$order, "\n")
 cat("Size: ", g_ts_analysis$size, "\n")
@@ -98,20 +110,24 @@ cat("Transitivity: ", g_ts_analysis$transitivity, "\n")
 ```
 
 ### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_ts,file.path(my_wd,"/graph/ts.csv"),"edgelist")
 ```
 
-
 ### Write Truth Social information
 We store the Truth Social network information in the following variables.
+
+**Run**
 ```{r}
 ts_sample_order <- g_ts_analysis$order
 ts_sample_size <- g_ts_analysis$size
 ts_sample_p <- 2*ts_sample_size/(ts_sample_order*(ts_sample_order-1))
 ```
 
-The original paper scraped roughly 10.6% of the estimated user count. Giving us the population data
+The original paper scraped roughly 10.6% of the estimated user count. Giving us the population data.
+
+**Run**
 ```{r}
 scale_sample_pop <- 0.106
 ts_pop_order <- round(ts_sample_order/scale_sample_pop,0)
@@ -120,6 +136,8 @@ ts_pop_size <- round(ts_sample_size/scale_sample_pop,0)
 
 ## Model graphs
 Due to the large size of the original network we use a scaler for the order of the network.
+
+**Run**
 ```{r}
 scale <- 1/10
 ```
@@ -128,6 +146,8 @@ scale <- 1/10
 
 #### Generate
 The parameters required are n and p. The value of n is the order of the network, while p is the probability of a connection between any pair of nodes. This probability was calculated under the assumption that an average TS user might be connected to a 100 other users as follower or followee on average. We have the p value of the Truth Social network, ideally the generated network has a similar p value (i.e. within an order of magnitude).
+
+**Read before run**: This chunk generates a new model graph, but there is a stored one. Only use this if you wish to overwrite later. (check next chunk)
 ```{r}
 n <- round(ts_pop_order * scale,0)
 p <- 0.000025 #(average 100 follower relationships in a 4.000.000 network)
@@ -142,16 +162,21 @@ cat("Sample/pop scale: ", vcount(g_sample_er)/vcount(g_pop_er),"\n")
 cat("P value: ", er_sample_p,"\n")
 cat("Target p value: ", ts_sample_p,"\n")
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_sample_er <- read_graph(file.path(my_wd,"/model_graphs/gnp_ts.csv"), "edgelist", directed=TRUE)
 ```
 
 #### Analyze
 The analysis function finds the information on the model network.
+
+**Run**
 ```{r}
 er_sample_analysis <- graph_main_analysis(g_sample_er)
 ```
+
+**Run**
 ```{r}
 cat("Order: ", er_sample_analysis$order, "\n")
 cat("Size: ", er_sample_analysis$size, "\n")
@@ -167,6 +192,7 @@ cat("Transitivity: ", er_sample_analysis$transitivity, "\n")
 ```
 
 #### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_sample_er,file.path(my_wd,"/model_graphs/gnp_ts.csv"),"edgelist")
 ```
@@ -176,6 +202,8 @@ Disclaimer: The Watts-Strogatz network is NOT directed. So in and outdegree valu
 
 #### Generate
 The parameters required are n, k, and p. The value of n is again the order of the graph. The value of k is one-sided neighbors, which can be estimated. The value of p is a rewiring probability, which is once again an estimation.
+
+**Read before run**: This chunk generates a new model graph, but there is a stored one. Only use this if you wish to overwrite later. (check next chunk)
 ```{r}
 n <- round(ts_pop_order * scale,0)
 k <- round(ts_pop_size/ts_pop_order,0)
@@ -186,16 +214,21 @@ g_pop_ws <- sample_smallworld(dim=1, size=n, nei=k, p=p)
 g_sample_ws <- bfs_subgraph(g_pop_ws, scale = scale_sample_pop)
 cat("Sample/pop scale: ", vcount(g_sample_ws)/vcount(g_pop_ws),"\n")
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_sample_ws <- read_graph(file.path(my_wd,"/model_graphs/swg_ts.csv"), "edgelist", directed=FALSE)
 ```
 
 #### Analyze
 The analysis function finds the information on the model network.
+
+**Run**
 ```{r}
 ws_sample_analysis <- graph_main_analysis(g_sample_ws)
 ```
+
+**Run**
 ```{r}
 cat("Order: ", ws_sample_analysis$order, "\n")
 cat("Size: ", ws_sample_analysis$size, "\n")
@@ -211,6 +244,7 @@ cat("Transitivity: ", ws_sample_analysis$transitivity, "\n")
 ```
 
 #### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_sample_ws,file.path(my_wd,"/model_graphs/swg_ts.csv"),"edgelist")
 ```
@@ -219,6 +253,8 @@ write_graph(g_sample_ws,file.path(my_wd,"/model_graphs/swg_ts.csv"),"edgelist")
 
 #### Generate
 The parameters required are n and m. The value of n is again the order of the graph. M is the degree of freedom, which can be estimated.
+
+**Read before run**: This chunk generates a new model graph, but there is a stored one. Only use this if you wish to overwrite later. (check next chunk)
 ```{r}
 n <- round(ts_pop_order * scale,0)
 m <- round(ts_pop_size/ts_pop_order,0)
@@ -228,16 +264,21 @@ g_pop_pa <- sample_pa(n=n, m=m, directed=TRUE)
 g_sample_pa <- bfs_subgraph(g_pop_pa, scale = scale_sample_pop)
 cat("Sample/pop scale: ", vcount(g_sample_pa)/vcount(g_pop_pa),"\n")
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_sample_pa <- read_graph(file.path(my_wd,"/model_graphs/pa_ts.csv"), "edgelist", directed=TRUE)
 ```
 
 #### Analyze
 The analysis function finds the information on the model network.
+
+**Run**
 ```{r}
 pa_sample_analysis <- graph_main_analysis(g_sample_pa)
 ```
+
+**Run**
 ```{r}
 cat("Order: ", pa_sample_analysis$order, "\n")
 cat("Size: ", pa_sample_analysis$size, "\n")
@@ -251,7 +292,9 @@ cat("Diameter: ", pa_sample_analysis$diameter, "\n")
 cat("Average path length: ", pa_sample_analysis$apl, "\n")
 cat("Transitivity: ", pa_sample_analysis$transitivity, "\n")
 ```
+
 #### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_sample_pa,file.path(my_wd,"/model_graphs/pa_ts.csv"),"edgelist")
 ```
@@ -259,24 +302,43 @@ write_graph(g_sample_pa,file.path(my_wd,"/model_graphs/pa_ts.csv"),"edgelist")
 ## Visualisations
 Note: both layout and rendering calculations may take a long time
 
+Note2: the Truth Social graph has never finished creating its layout, so it is the only one unrendered. You need to uncomment it and run it.
+
 ### Layout
 The layouts are in separate cells, as execution takes quite long.
+
+**Run**
 ```{r}
 set.seed(length(V(g_sample_er))+length(V(g_sample_ws))+length(V(g_sample_pa)))
 ```
 
+Note: Graphopt layouts produce odd, cross shaped plots, drl at least makes them interpretable. But please keep in mind that these layouts were not meant for such large graphs.
+
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
+```{r}
+#l_ts = layout_with_graphopt(g_ts, niter=100, charge = 0.05, mass = 30)
+#saveRDS(l_ts, file = file.path(my_wd,"layouts/l_ts.RDS"))
+l_ts2 = layout_with_drl(g_ts)
+saveRDS(l_ts2, file = file.path(my_wd,"layouts/l_ts2.RDS"))
+```
+
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_er = layout_with_graphopt(g_sample_er, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_er, file = file.path(my_wd,"layouts/l_er_ts.RDS"))
 l_er2 = layout_with_drl(g_sample_er)
 saveRDS(l_er2, file = file.path(my_wd,"layouts/l_er_ts2.RDS"))
 ```
+
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_ws = layout_with_graphopt(g_sample_ws, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_ws, file = file.path(my_wd,"layouts/l_ws_ts.RDS"))
 l_ws2 = layout_with_drl(g_sample_ws)
 saveRDS(l_ws2, file = file.path(my_wd,"layouts/l_ws_ts2.RDS"))
 ```
+
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_pa = layout_with_graphopt(g_sample_pa, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_pa, file = file.path(my_wd,"layouts/l_pa_ts.RDS"))
@@ -285,10 +347,14 @@ saveRDS(l_pa2, file = file.path(my_wd,"layouts/l_pa_ts2.RDS"))
 ```
 
 You can alternatively load them in for /layouts.
+
+**Read before run**: Use this if you haven't chenged the underlying size/order.
 ```{r}
+#l_ts <- readRDS(file.path(my_wd,"layouts/l_ts.RDS"))
 #l_er <- readRDS(file.path(my_wd,"layouts/l_er_ts.RDS"))
 #l_ws <- readRDS(file.path(my_wd,"layouts/l_ws_ts.RDS"))
 #l_pa <- readRDS(file.path(my_wd,"layouts/l_pa_ts.RDS"))
+l_ts2 <- readRDS(file.path(my_wd,"layouts/l_ts2.RDS"))
 l_er2 <- readRDS(file.path(my_wd,"layouts/l_er_ts2.RDS"))
 l_ws2 <- readRDS(file.path(my_wd,"layouts/l_ws_ts2.RDS"))
 l_pa2 <- readRDS(file.path(my_wd,"layouts/l_pa_ts2.RDS"))
@@ -298,6 +364,7 @@ l_pa2 <- readRDS(file.path(my_wd,"layouts/l_pa_ts2.RDS"))
 
 Add the degrees
 ```{r}
+#g_ts <- add_degree_attribute(g_ts)
 g_sample_er <- add_degree_attribute(g_sample_er)
 g_sample_ws <- add_degree_attribute(g_sample_ws)
 g_sample_pa <- add_degree_attribute(g_sample_pa)
@@ -306,20 +373,28 @@ g_sample_pa <- add_degree_attribute(g_sample_pa)
 ### Create graphs
 This uses an external function for uniform representation.
 ```{r}
+#g_graph_ts <- create_graph_visualization(g_ts, l_ts2, "orange")
 g_graph_er <- create_graph_visualization(g_sample_er, l_er2, "blue")
 g_graph_ws <- create_graph_visualization(g_sample_ws, l_ws2, "green")
 g_graph_pa <- create_graph_visualization(g_sample_pa, l_pa2, "red")
 ```
 
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
+```{r}
+#g_graph_ts
+#ggsave(file.path(my_wd,"plots/ts.svg"), plot=g_graph_ts, device="svg", width=19, height=9)
+```
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_er
 ggsave(file.path(my_wd,"plots/er_ts.svg"), plot=g_graph_er, device="svg", width=19, height=9)
 ```
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_ws
 ggsave(file.path(my_wd,"plots/ws_ts.svg"), plot=g_graph_ws, device="svg", width=19, height=9)
 ```
-
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_pa
 ggsave(file.path(my_wd,"plots/pa_ts.svg"), plot=g_graph_pa, device="svg", width=19, height=9)
