@@ -3,6 +3,17 @@
 ## Goal
 The goal of this project is to create a comparative analysis between Truth Social and Mastodon.social. The project involves two main steps: data mining for Mastodon.social, followed by a comprehensive analysis of both platforms.
 
+## Usage of notebooks
+The following three notebooks have three differently labelled chunks:
+- `mastodon_analysis comparison.Rmd`
+- `mastodon_scrape.Rmd`
+- `ts_analysis comparison.Rmd`
+
+The chunk labels have the following meaning:
+- **Run**
+- **Read before run**: `reason` (Generation chunks, that don't need to be run again as the generated artifact has been stored)
+- **Don't run**: `reason` (Either outdated or only required in case of hard reset)
+
 ## Contents
 The repository is organized as follows:
 - `data/`: Contains the data for the Truth Social dataset (source: [insert source link]) and continuous mining results from the Mastodon scrape notebook (source: [insert source link]).
