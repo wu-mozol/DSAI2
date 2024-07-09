@@ -339,7 +339,8 @@ saveRDS(l_pa2, file = file.path(my_wd,"layouts/l_pa_ma2.RDS"))
 ```
 
 You can alternatively load them in from /layouts.
-**Run**
+
+**Read before run**: Use this if you haven't chenged the underlying size/order.
 ```{r}
 #l_ma <- readRDS(file.path(my_wd,"layouts/l_ma.RDS"))
 #l_er <- readRDS(file.path(my_wd,"layouts/l_er_ma.RDS"))
