@@ -20,6 +20,8 @@ This notebook is where data scraping of Mastodon has been implemented. The proje
 
 ## Libraries
 The notebook uses the following libraries.
+
+**Run**
 ```{r warning=FALSE}
 library(rtoot)
 library(dplyr)
@@ -34,6 +36,8 @@ library(renv)
 First, the wd needs to be set up as well as the token for scraping, that is stored in .REnviron.
 
 Make sure to set you wd to the project folder.
+
+**Read before run**: uncomment create_project and specify new Rproj file if this is a new setup. Otherwise leave it be.
 ```{r}
 my_wd <- getwd()
 project <- file.path(my_wd)
@@ -43,16 +47,22 @@ source(file.path(my_wd,"functions/functions_scrape.R"))
 ```
 
 This is my (Gábor Mozol) token, please don't use it. This is not an optimal way to store it, but made my life easier.
+
+**Read before run**: Only run if .REnviron is not set up!
 ```{r}
 b <- list(bearer = "5GpTKBv-6ew9-3W0IH_f-uZwVFuf2NTfxIrD-gMUCqk", type="user", instance="mastodon.social")
 class(b) <- "rtoot_bearer"
 ```
 
 **For a new envvar token copy in the clipboard contents into the .REnviron file in the WD**
+
+**Read before run**: Only run if .REnviron is not set up!
 ```{r}
 convert_token_to_envvar(b)
 ```
 **Make sure that the correct token is being used!**
+
+**Run**
 ```{r}
 readRenviron(file.path(my_wd,".Renviron"))
 verify_envvar()
@@ -72,6 +82,8 @@ The search itself does the following.
 * Repeat
 
 ### Initialize
+
+**Read before run**: Run this to set up a brand new start point for scraping.
 ```{r}
 # Initialize the start user
 start_user <- "@Gargron@mastodon.social"
@@ -84,7 +96,7 @@ start_user_id <- search_accounts(start_user) %>%
 ```
 
 ### First run
-**Don't run if there are already files in your WD**
+**Don't run**: if there are already files in your WD!
 ```{r}
 #next_state <- perform_bfs(start_user_id = start_user_id)
 #
@@ -97,6 +109,8 @@ start_user_id <- search_accounts(start_user) %>%
 ### Next run
 
 Note: There's a lot of print output due to the function, but it helps keep track of what's being fetched.
+
+**Run**
 ```{r}
 queue <- readRDS(file.path(my_wd,"data/mastodon_data/queue.rds"))
 nodes <- readRDS(file.path(my_wd,"data/mastodon_data/nodes.rds"))
@@ -120,6 +134,8 @@ saveRDS(next_state$visited, file = file.path(my_wd,"data/mastodon_data/visited.r
 
 ### Automatic runs
 Set runs to determine run time. Each run fetches 10 new nodes with 40 followees. This translates to 10 new scrapes and up to 390 new edges and end nodes found. As there are 300 API calls / 5 minutes, you can technically run into a sleep mode within a run. After every run there's a 5 minute cooldown to reduce states where the new data is not stored in the .RDS documents. On average a single run takes 5 minutes.
+
+**Run**
 ```{r}
 ### Iterative version of scraping
 runs <- 6
@@ -164,6 +180,8 @@ You can check the current scraping status here.
 * Efficiency status (2024.06.21): 1.7% of edges are duplicates (42877 found), 2.4% of nodes are duplicates (1500 visited), 22850 nodes reached in total.
 * Efficiency status (2024.06.22): 1.8% of edges are duplicates (81764 found), 2.9% of nodes are duplicates (2802 visited), 38955 nodes reached in total.
 * Efficiency status (2024.06.24): 2.1% of edges are duplicates (140030 found), 4.2% of nodes are duplicates (5070 visited), 54285 nodes reached in total.
+
+**Run**
 ```{r}
 queue <- readRDS(file.path(my_wd, "data/mastodon_data/queue.rds"))
 nodes <- readRDS(file.path(my_wd, "data/mastodon_data/nodes.rds"))
