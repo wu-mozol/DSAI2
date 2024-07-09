@@ -21,6 +21,8 @@ The graph models are a 1:1 scale version of the estimated total size of the mast
 
 ## Libraries
 The notebook uses the following libraries.
+
+**Run**
 ```{r warning=FALSE}
 library(ggraph)
 library(igraph)
@@ -29,8 +31,9 @@ library(dplyr)
 
 ## Project setup
 First, the wd needs to be set up.
-
 Make sure to set you wd to the project folder.
+
+**Read before run**: uncomment create_project and specify new Rproj file if this is a new setup. Otherwise leave it be.
 ```{r}
 my_wd <- getwd()
 project <- file.path(my_wd)
@@ -46,11 +49,18 @@ There are a few duplicates (below 5%) in the tables that need to be cleaned up f
 Then the data will be read into a graph and analysis function will return its descriptive statistics.
 
 ### Read and clean the data
+
+First, read in the data already gathered. (see mastodon_scrape.Rmd for details)
+
+**Run**
 ```{r}
 nodes <- readRDS(file.path(my_wd, "data/mastodon_data/nodes.rds"))
 edges <- readRDS(file.path(my_wd, "data/mastodon_data/edges.rds"))
 ```
 
+Second, remove duplicates.
+
+**Run**
 ```{r}
 unique_edges <- edges %>%
   distinct(follower, followee)
@@ -58,6 +68,9 @@ unique_nodes <- nodes %>%
   distinct(id, .keep_all = TRUE)
 ```
 
+Third, check if all edge ids are in nodelist, append if not.
+
+**Run**
 ```{r}
 ids_to_add <- union(setdiff(edges$follower, nodes$id), setdiff(edges$followee, nodes$id))
 
@@ -71,20 +84,25 @@ unique_nodes <- bind_rows(unique_nodes, additional_nodes)
 ```
 
 ### Create graph representation
+
+**Read before run**: As a version of the graph is stored separately in a .csv, only run this, if it is outdated. (check next chunk)
 ```{r}
 g_ma <- graph_from_data_frame(d = unique_edges, vertices = unique_nodes, directed = TRUE)
 ```
 
-If you want to use the previously generated graph, you can load it in this way.
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_ma <- read_graph(file.path(my_wd,"/graph/ma.csv"), "edgelist", directed=TRUE)
 ```
 
 ### Analyze
+
+**Run**
 ```{r}
 g_ma_analysis <- graph_main_analysis(g_ma)
 ```
 
+**Run**
 ```{r}
 cat("Order: ", g_ma_analysis$order, "\n")
 cat("Size: ", g_ma_analysis$size, "\n")
@@ -100,11 +118,14 @@ cat("Transitivity: ", g_ma_analysis$transitivity, "\n")
 ```
 
 ### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_ma,file.path(my_wd,"/graph/ma.csv"),"edgelist")
 ```
 
 ### Write out Mastodon information for later analysis
+
+**Run**
 ```{r}
 ma_sample_order <- g_ma_analysis$order
 ma_sample_size <- g_ma_analysis$size
@@ -116,6 +137,7 @@ ma_pop_size <- round(ma_sample_size/scale_sample_pop,0)
 
 ## Model graphs
 
+**Run**
 ```{r}
 scale <- 1/2
 ```
@@ -124,6 +146,8 @@ scale <- 1/2
 
 #### Generate
 The parameters required are n and p. The value of n is the order of the network, while p is the probability of a connection between any pair of nodes. This probability was calculated under the assumption that an average TS user might be connected to a 100 other users as follower or followee on average. We have the p value of the Truth Social network, ideally the generated network has a similar p value (i.e. within an order of magnitude).
+
+**Read before run**: This chunk generates a new model graph, but there is a stored one. Only use this if you wish to overwrite later. (check next chunk)
 ```{r}
 n <- round(ma_pop_order * scale,0)
 p <- 0.0000526 #(average 50 follower relationships in a 950.000 network)
@@ -138,16 +162,20 @@ cat("Sample/pop scale: ", vcount(g_sample_er)/vcount(g_pop_er),"\n")
 cat("P value: ", er_sample_p,"\n")
 cat("Target p value: ", ma_sample_p,"\n")
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_sample_er <- read_graph(file.path(my_wd,"/model_graphs/gnp_ma.csv"), "edgelist", directed=TRUE)
 ```
 
 #### Analyze
 The analysis function finds the information on the model network.
+
+**Run**
 ```{r}
 er_sample_analysis <- graph_main_analysis(g_sample_er)
 ```
+**Run**
 ```{r}
 cat("Order: ", er_sample_analysis$order, "\n")
 cat("Size: ", er_sample_analysis$size, "\n")
@@ -163,6 +191,7 @@ cat("Transitivity: ", er_sample_analysis$transitivity, "\n")
 ```
 
 #### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_sample_er,file.path(my_wd,"/model_graphs/gnp_ma.csv"),"edgelist")
 ```
@@ -172,6 +201,8 @@ Disclaimer: The Watts-Strogatz network is NOT directed. So in and outdegree valu
 
 #### Generate
 The parameters required are n, k, and p. The value of n is again the order of the graph. The value of k is one-sided neighbors, which can be estimated. The value of p is a rewiring probability, which is once again an estimation.
+
+**Read before run**: This chunk generates a new model graph, but there is a stored one. Only use this if you wish to overwrite later. (check next chunk)
 ```{r}
 n <- round(ma_pop_order * scale,0)
 k <- round(ma_pop_size/ma_pop_order,0)
@@ -182,16 +213,20 @@ g_pop_ws <- sample_smallworld(dim=1, size=n, nei=k, p=p)
 g_sample_ws <- bfs_subgraph(g_pop_ws, scale = scale_sample_pop)
 cat("Sample/pop scale: ", vcount(g_sample_ws)/vcount(g_pop_ws),"\n")
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_sample_ws <- read_graph(file.path(my_wd,"/model_graphs/swg_ma.csv"), "edgelist", directed=FALSE)
 ```
 
 #### Analyze
 The analysis function finds the information on the model network.
+
+**Run**
 ```{r}
 ws_sample_analysis <- graph_main_analysis(g_sample_ws)
 ```
+**Run**
 ```{r}
 cat("Order: ", ws_sample_analysis$order, "\n")
 cat("Size: ", ws_sample_analysis$size, "\n")
@@ -207,6 +242,7 @@ cat("Transitivity: ", ws_sample_analysis$transitivity, "\n")
 ```
 
 #### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_sample_ws,file.path(my_wd,"/model_graphs/swg_ma.csv"),"edgelist")
 ```
@@ -215,6 +251,8 @@ write_graph(g_sample_ws,file.path(my_wd,"/model_graphs/swg_ma.csv"),"edgelist")
 
 #### Generate
 The parameters required are n and m. The value of n is again the order of the graph. M is the degree of freedom, which can be estimated.
+
+**Read before run**: This chunk generates a new model graph, but there is a stored one. Only use this if you wish to overwrite later. (check next chunk)
 ```{r}
 n <- round(ma_pop_order * scale,0)
 m <- round(ma_pop_size/ma_pop_order,0)
@@ -224,16 +262,20 @@ g_pop_pa <- sample_pa(n=n, m=m, directed=TRUE)
 g_sample_pa <- bfs_subgraph(g_pop_pa, scale = scale_sample_pop)
 cat("Sample/pop scale: ", vcount(g_sample_pa)/vcount(g_pop_pa),"\n")
 ```
-If you want to use the previously generated graph, you can load it in this way.
+
+**Read before run**: If you want to use the previously generated graph, you can load it in this way.
 ```{r}
 g_sample_pa <- read_graph(file.path(my_wd,"/model_graphs/pa_ma.csv"), "edgelist", directed=TRUE)
 ```
 
 #### Analyze
 The analysis function finds the information on the model network.
+
+**Run**
 ```{r}
 pa_sample_analysis <- graph_main_analysis(g_sample_pa)
 ```
+**Run**
 ```{r}
 cat("Order: ", pa_sample_analysis$order, "\n")
 cat("Size: ", pa_sample_analysis$size, "\n")
@@ -249,6 +291,7 @@ cat("Transitivity: ", pa_sample_analysis$transitivity, "\n")
 ```
 
 #### Save
+**Read before run**: Watch out, don't unnecessarily overwrite the existing .csv graph representation.
 ```{r}
 write_graph(g_sample_pa,file.path(my_wd,"/model_graphs/pa_ts.csv"),"edgelist")
 ```
@@ -258,28 +301,36 @@ Note: both layout and rendering calculations may take a long time
 
 ### Layout
 The layouts are in separate cells, as execution takes quite long.
+
+**Run**
 ```{r}
 set.seed(length(V(g_sample_er))+length(V(g_sample_ws))+length(V(g_sample_pa)))
 ```
 
+Note: Graphopt layouts produce odd, cross shaped plots, drl at least makes them interpretable. But please keep in mind that these layouts were not meant for such large graphs.
+
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_ma = layout_with_graphopt(g_ma, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_ma, file = file.path(my_wd,"layouts/l_ma.RDS"))
 l_ma2 = layout_with_drl(g_ma)
 saveRDS(l_ma2, file = file.path(my_wd,"layouts/l_ma2.RDS"))
 ```
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_er = layout_with_graphopt(g_sample_er, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_er, file = file.path(my_wd,"layouts/l_er_ma.RDS"))
 l_er2 = layout_with_drl(g_sample_er)
 saveRDS(l_er2, file = file.path(my_wd,"layouts/l_er_ma2.RDS"))
 ```
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_ws = layout_with_graphopt(g_sample_ws, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_ws, file = file.path(my_wd,"layouts/l_ws_ma.RDS"))
 l_ws2 = layout_with_drl(g_sample_ws)
 saveRDS(l_ws2, file = file.path(my_wd,"layouts/l_ws_ma2.RDS"))
 ```
+**Read before run**: This chunk generates a new graph layout, only use this if the order/size of the graph changed, as it takes quite long and previously generated layouts have been saved.
 ```{r}
 #l_pa = layout_with_graphopt(g_sample_pa, niter=100, charge = 0.05, mass = 30)
 #saveRDS(l_pa, file = file.path(my_wd,"layouts/l_pa_ma.RDS"))
@@ -287,7 +338,8 @@ l_pa2 = layout_with_drl(g_sample_pa)
 saveRDS(l_pa2, file = file.path(my_wd,"layouts/l_pa_ma2.RDS"))
 ```
 
-You can alternatively load them in for /layouts.
+You can alternatively load them in from /layouts.
+**Run**
 ```{r}
 #l_ma <- readRDS(file.path(my_wd,"layouts/l_ma.RDS"))
 #l_er <- readRDS(file.path(my_wd,"layouts/l_er_ma.RDS"))
@@ -302,6 +354,7 @@ l_pa2 <- readRDS(file.path(my_wd,"layouts/l_pa_ma2.RDS"))
 ### Feature addition
 
 Add the degrees
+**Run**
 ```{r}
 g_ma <- add_degree_attribute(g_ma)
 g_sample_er <- add_degree_attribute(g_sample_er)
@@ -311,6 +364,7 @@ g_sample_pa <- add_degree_attribute(g_sample_pa)
 
 ### Create graphs
 This uses an external function for uniform representation.
+**Run**
 ```{r}
 g_graph_ma <- create_graph_visualization(g_ma, l_ma2, "purple")
 g_graph_er <- create_graph_visualization(g_sample_er, l_er2, "blue")
@@ -318,21 +372,22 @@ g_graph_ws <- create_graph_visualization(g_sample_ws, l_ws2, "green")
 g_graph_pa <- create_graph_visualization(g_sample_pa, l_pa2, "red")
 ```
 
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_ma
 ggsave(file.path(my_wd,"plots/ma.svg"), plot=g_graph_ma, device="svg", width=19, height=9)
 ```
-
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_er
 ggsave(file.path(my_wd,"plots/er_ma.svg"), plot=g_graph_er, device="svg", width=19, height=9)
 ```
-
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_ws
 ggsave(file.path(my_wd,"plots/ws_ma.svg"), plot=g_graph_ws, device="svg", width=19, height=9)
 ```
-
+**Read before run**: The rendering of the graphs takes quite long, if you want to take a look at them, check out the .png versions in /plots.
 ```{r}
 g_graph_pa
 ggsave(file.path(my_wd,"plots/pa_ma.svg"), plot=g_graph_pa, device="svg", width=19, height=9)
