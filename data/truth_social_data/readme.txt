@@ -23,13 +23,13 @@ Terms to Know
 --------------------------------------------
 Truth - Truth Social's term for a post. Near-equivalent to a Tweet.
 ReTruth - Truth Social's equivalent to a retweet. When a user ReTruths a Truth, that original Truth appears on their posts, but the ReTruth cannot be
-liked, ReTruthed, or replied to (one can only perform these actions on the original Truth) 
+liked, ReTruthed, or replied to (one can only perform these actions on the original Truth)
 
 --------------------------------------------
 users.tsv file structure
 --------------------------------------------
 |id|timestamp|time_scraped|username|follower_count|following_count|profile_url|finished_follower_scrape|finished_following_scrape|finished_truth_scrape
-id - unique integer id 
+id - unique integer id
 timestamp - datetime of the listed user creation date (note that Truth Social only provides the month and year a user's profile was create)
 time_scraped - datetime of when the user's profile was last scraped
 username - text of the user's username
@@ -43,7 +43,7 @@ finished_truth_scrape - boolean indicating if the user's truths have been entire
 follows.tsv file structure
 --------------------------------------------
 id|time_scraped|follower|followed
-id - unique integer id 
+id - unique integer id
 time_scraped - datetime of when the edge was added to the data
 follower - int foreign key referencing the follower user
 followed - int foreign key referencing the followed user
@@ -51,7 +51,7 @@ followed - int foreign key referencing the followed user
 truths.tsv file structure
 --------------------------------------------
 id|timestamp|time_scraped|is_retruth|is_reply|author|like_count|retruth_count|reply_count|text|external_id|url|truth_retruthed
-id - unique integer id 
+id - unique integer id
 timestamp - datetime of when the Truth was posted
 time_scraped - datetime of when the Truth was added to the data
 is_retruth - boolean indicating whether the Truth is a ReTruth
@@ -67,7 +67,7 @@ truth_retruthed - int foreign key to Truth current Truth is ReTruthing. If the c
 quotes.tsv file structure
 --------------------------------------------
 id|timestamp|time_scraped|quoted_user|quoting_user|quoting_truth|quoted_truth_external_id
-id - unique integer id 
+id - unique integer id
 timestamp - datetime of when the Truth was posted
 time_scraped - datetime of when the quote was added to the data
 quoted_user - int foreign key to the quoted user
@@ -78,7 +78,7 @@ quoted_truth_external_id - int of the Truth Social's unique id of the quoted Tru
 replies.tsv file structure
 --------------------------------------------
 id|time_scraped|replying_user|replied_user
-id - unique integer id 
+id - unique integer id
 time_scraped - datetime of when the reply was added to the data
 replying_user - int foreign key to the replying user
 replied_user - int foreign key to the replied user
@@ -86,47 +86,47 @@ replied_user - int foreign key to the replied user
 media.tsv file structure
 --------------------------------------------
 id|media_url|
-id - unique integer id 
+id - unique integer id
 media_irl - text of the media's url
 --------------------------------------------
 hashtags.tsv file structure
 --------------------------------------------
 id|first_seen|hashtag|
-id - unique integer id 
+id - unique integer id
 first_seen - datetime of when the hashtag was first added to the data
 hashtag - text of the url
 --------------------------------------------
 external_urls.tsv file structure
 --------------------------------------------
 id|url|
-id - unique integer id 
+id - unique integer id
 url - text of the external url
 --------------------------------------------
 truth_media_edges.tsv file structure
 --------------------------------------------
 id|truth_id|media_id|
-id - unique integer id 
+id - unique integer id
 truth_id - int foreign key of the referenced truth
 media_id - int foreign key of the referenced media
 --------------------------------------------
 truth_hashtag_edges.tsv file structure
 --------------------------------------------
 id|truth_id|hashtag_id|
-id - unique integer id 
+id - unique integer id
 truth_id - int foreign key of the referenced truth
 hashtag_id - int foreign key of the referenced hashtag
 --------------------------------------------
 truth_external_url_edges.tsv file structure
 --------------------------------------------
 id|truth_id|url_id|
-id - unique integer id 
+id - unique integer id
 truth_id - int foreign key of the referenced truth
 url_id - int foreign key of the referenced url
 --------------------------------------------
 truth_user_tag_edges.tsv file structure
 --------------------------------------------
 id|time_scraped|truth_id|user_id
-id - unique integer id 
+id - unique integer id
 time_scraped - datetime of when the entry was added to the data
 truth_id - int foreign key of the referenced truth
 user_id - int foreign key of the tagged user
