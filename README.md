@@ -1,5 +1,7 @@
 # Data Science and Artificial Intelligence II - Project of Team 13
 
+The repository can be found at [this site](https://github.com/).
+
 ## Goal
 The goal of this project is to create a comparative analysis between Truth Social and Mastodon.social. The project involves two main steps: data mining for Mastodon.social, followed by a comprehensive analysis of both platforms.
 
