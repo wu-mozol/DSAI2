@@ -72,6 +72,7 @@ You can install the required R packages using install.packages():
 
 ```R
 install.packages(c("ggraph", "igraph", "dplyr", "rtoot", "lubridate", "tibble", "data.table", "usethis", "renv", "purrr"))
+```
 
 To run the Python code, the following (standard) packages are required:
 
@@ -88,3 +89,4 @@ You can install the required Python libraries with pip:
 
 ```Console
 pip install csv bs4 nltk numpy matplotlib scipy wordcloud requests
+```
