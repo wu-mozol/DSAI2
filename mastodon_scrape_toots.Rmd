@@ -1,0 +1,84 @@
+library(dplyr)
+library(purrr)
+library(rtoot) 
+
+# Load existing data (assuming the project WD structure)
+my_wd <- getwd()
+project <- file.path(my_wd)
+nodes <- readRDS(file.path(my_wd,"data/mastodon_data/nodes.rds"))
+edges <- readRDS(file.path(my_wd,"data/mastodon_data/edges.rds"))
+
+# Fetch toots
+get_recent_toots <- function(user_id, n = 10) {
+  Sys.sleep(0.1)  # Prevent rate limiting
+  tryCatch({
+    toots <- get_account_statuses(user_id)
+    #print(paste("Raw API Response for user", user_id, ":"))
+    #print(toots) 
+    if (is.data.frame(toots) && nrow(toots) > 0) {
+      processed_toots <- toots %>%
+        select(id, content, created_at) %>%
+        head(n)
+      return(processed_toots)
+    } else {
+      return(data.frame())
+    }
+  }, error = function(e) {
+    message("Error fetching toots for user ", user_id, ": ", e$message)
+    return(data.frame())
+  })
+}
+
+# Load existing all_toots or create an empty dataframe
+all_toots_file <- file.path(my_wd,"data/mastodon_data/toots.rds")
+if (file.exists(all_toots_file)) {
+  all_toots <- readRDS(all_toots_file)
+} else {
+  all_toots <- tibble(user_id = character(), toot_id = character(), content = character(), created_at = character())
+  saveRDS(all_toots, all_toots_file)
+}
+
+# Fetch and process new toots
+process_new_toots <- function(node_id) {
+  message("Checking toots for user ID: ", node_id)
+  # Load current all_toots
+  if (file.exists(all_toots_file)) {
+    all_toots <- readRDS(all_toots_file)
+  } else {
+    all_toots <- tibble(user_id = character(), toot_id = character(), content = character(), created_at = character())
+  }
+  if (!(as.character(node_id) %in% all_toots$user_id)) {
+    message("Fetching new toots for user ID: ", node_id)
+    user_toots <- get_recent_toots(node_id)
+    #print(user_toots)  # Debug: Print the fetched toots
+    if (nrow(user_toots) > 0) {
+      toots_df <- user_toots %>%
+        mutate(user_id = as.character(node_id)) %>%
+        select(user_id, toot_id = id, content, created_at)
+      print(toots_df)  # Debug: Print the dataframe before saving
+      all_toots <- bind_rows(all_toots, toots_df)
+      saveRDS(all_toots, all_toots_file)
+      message("Toots for user ID ", node_id, " added.")
+    } else {
+      message("No new toots to fetch for user ID: ", node_id)
+    }
+  } else {
+    message("Toots already fetched for user ID: ", node_id)
+  }
+}
+
+# Ensure the directory exists
+dir.create(dirname(all_toots_file), showWarnings = FALSE, recursive = TRUE)
+
+# Apply to all nodes
+nodes$id %>% as.character() %>% walk(process_new_toots)
+
+# Reload the final all_toots to print summary
+if (file.exists(all_toots_file)) {
+  all_toots <- readRDS(all_toots_file)
+  cat("Total users: ", nrow(nodes), "\n")
+  cat("Users with toots fetched: ", length(unique(all_toots$user_id)), "\n")
+  cat("Total toots fetched: ", nrow(all_toots), "\n")
+} else {
+  cat("No toots were fetched or saved.\n")
+}
